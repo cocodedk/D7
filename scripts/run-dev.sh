@@ -21,10 +21,18 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 cd "$PROJECT_ROOT"
 
-# Check if Netlify CLI is installed
-if ! command -v netlify &> /dev/null; then
-  echo -e "${YELLOW}Netlify CLI not found. Installing...${NC}"
-  npm install -g netlify-cli
+# Check if Netlify CLI is available
+NETLIFY_CMD=""
+if command -v netlify &> /dev/null; then
+  NETLIFY_CMD="netlify"
+elif [ -f "node_modules/.bin/netlify" ]; then
+  NETLIFY_CMD="node_modules/.bin/netlify"
+elif command -v npx &> /dev/null; then
+  NETLIFY_CMD="npx netlify"
+else
+  echo -e "${YELLOW}Netlify CLI not found. Installing locally...${NC}"
+  npm install --save-dev netlify-cli
+  NETLIFY_CMD="node_modules/.bin/netlify"
 fi
 
 # Check if node_modules exists
@@ -47,5 +55,12 @@ echo -e "${BLUE}The server will start on http://localhost:8888 by default${NC}"
 echo -e "${BLUE}API functions will be available at http://localhost:8888/api/*${NC}"
 echo ""
 
-# Run Netlify dev with any passed arguments
-netlify dev "$@"
+# Check if --offline flag is already in arguments
+OFFLINE_FLAG=""
+if [[ ! "$*" =~ --offline ]]; then
+  OFFLINE_FLAG="--offline"
+fi
+
+# Run Netlify dev with offline mode to avoid linking to other projects
+# This ensures it uses only the local netlify.toml configuration
+$NETLIFY_CMD dev $OFFLINE_FLAG "$@"
