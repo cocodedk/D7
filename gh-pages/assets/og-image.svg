@@ -1,0 +1,23 @@
+<svg width="1200" height="630" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="1200" height="630" fill="#0d5d2e"/>
+
+  <!-- Decorative cards -->
+  <text x="100" y="150" font-size="120" fill="rgba(255,255,255,0.2)">🃏</text>
+  <text x="1000" y="500" font-size="120" fill="rgba(255,255,255,0.2)">♠️</text>
+  <text x="200" y="550" font-size="100" fill="rgba(255,255,255,0.15)">♦️</text>
+  <text x="1050" y="200" font-size="100" fill="rgba(255,255,255,0.15)">♥️</text>
+
+  <!-- Main Title -->
+  <text x="600" y="280" font-family="Arial, sans-serif" font-size="80" font-weight="bold" fill="#ffd700" text-anchor="middle">D7</text>
+
+  <!-- Subtitle -->
+  <text x="600" y="340" font-family="Arial, sans-serif" font-size="36" fill="#ffffff" text-anchor="middle">Hafte Kasif Tournament Tracker</text>
+
+  <!-- Tagline -->
+  <text x="600" y="400" font-family="Arial, sans-serif" font-size="24" fill="rgba(255,255,255,0.9)" text-anchor="middle">A card game that's basically what happens when</text>
+  <text x="600" y="440" font-family="Arial, sans-serif" font-size="24" fill="rgba(255,255,255,0.9)" text-anchor="middle">Uno has a chaotic Danish-Persian cousin</text>
+
+  <!-- Footer -->
+  <text x="600" y="580" font-family="Arial, sans-serif" font-size="18" fill="rgba(255,255,255,0.7)" text-anchor="middle">Built with ☕ and competitive spirit in Denmark</text>
+</svg>

@@ -1,15 +1,33 @@
-# D7 Card Game
+# D7 - Hafte Kasif Tournament Tracker 🃏🇩🇰
 
-A mobile-first web application for scoring the D7 card game, built with React, TypeScript, and Netlify Functions.
+A tournament tracking app for **Hafte Kasif** (also known as **Bisheori**) — a card game that's basically what happens when Uno has a chaotic Danish-Persian cousin.
+
+This app is used by a group of friends in Denmark to track our bi-weekly tournament battles and settle the eternal question: *who is the true card game champion?*
+
+## The Players
+
+The legendary competitors:
+
+- 🎯 **Babak** *(the one who built this thing)*
+- 🃏 **Khosrow**
+- 🎲 **Mohsen**
+- 🏆 **Massoud**
+- ♠️ **Mehdi**
+- 6️⃣ **Hussein 6**
+- 🎸 **Hussein Gaga**
+- ♦️ **Behzad**
+
+## What is Hafte Kasif?
+
+Hafte Kasif is a card game variant combining elements of Uno and other trick-taking games. The rules are... let's say *locally defined* and fiercely debated. If you're not part of our group, you probably won't understand the scoring. And that's okay. 😄
 
 ## Features
 
-- Event-sourced scoring system
-- Tournament management with lifecycle states
-- Player management with avatars
-- Two-phase game recording (staging + confirmation)
-- Dark/light mode support
-- Mobile-optimized UI
+- 🏆 **Tournament Management** — Create and manage bi-weekly tournaments
+- 👥 **Player Profiles** — Track players with avatars and stats
+- 📊 **Scoring System** — Event-sourced scoring with full history
+- 📱 **Mobile-First** — Built for quick score entry between rounds
+- 🌙 **Dark Mode** — For those late-night tournament sessions
 
 ## Tech Stack
 
@@ -18,7 +36,7 @@ A mobile-first web application for scoring the D7 card game, built with React, T
 - **Database**: PostgreSQL (Neon)
 - **Deployment**: Netlify
 
-## Setup
+## For Developers
 
 ### Prerequisites
 
@@ -28,25 +46,21 @@ A mobile-first web application for scoring the D7 card game, built with React, T
 
 ### Installation
 
-1. Install dependencies:
 ```bash
+# Install dependencies
 npm install
-```
 
-2. Set up environment variables:
-   - Copy `.env.example` to `.env.local` for local development
-   - Set `ADMIN_PASSWORD` and `DATABASE_URL` in Netlify dashboard
+# Set up environment variables
+cp .env.example .env.local
+# Edit .env.local with your DATABASE_URL and ADMIN_PASSWORD
 
-3. Run database migrations:
-   - Execute `netlify/migrations/001_initial_schema.sql` in your PostgreSQL database
+# Run database migrations
+# Execute netlify/migrations/001_initial_schema.sql in your PostgreSQL database
 
-4. Start development server:
-```bash
+# Start development server
 npm run dev
-```
 
-5. Test Netlify functions locally:
-```bash
+# Or test with Netlify functions locally
 netlify dev
 ```
 
@@ -60,25 +74,25 @@ D7/
 ├── src/
 │   ├── components/      # React components
 │   ├── contexts/        # React contexts
-│   ├── hooks/          # Custom hooks
-│   ├── lib/            # Utilities (scoring, API)
-│   ├── pages/          # Page components
-│   └── styles/         # Global styles
-└── docs/               # Documentation
+│   ├── hooks/           # Custom hooks
+│   ├── lib/             # Utilities (scoring, API)
+│   ├── pages/           # Page components
+│   └── styles/          # Global styles
+└── docs/                # Documentation
 ```
 
-## Deployment
+## Contributing
 
-1. Connect your Git repository to Netlify
-2. Set environment variables in Netlify dashboard:
-   - `ADMIN_PASSWORD`
-   - `DATABASE_URL`
-3. Deploy - Netlify will automatically build and deploy
+This is a personal project for our friend group, but if you somehow ended up here and want to adapt it for your own card game tournaments — go for it! Fork away. 🍴
 
-## Documentation
+## Author
 
-See `docs/` directory for detailed implementation documentation.
+**Babak Bandpey** — [cocode.dk](https://cocode.dk)
 
 ## License
 
-Private project
+MIT — Use it, modify it, make your own tournament tracker for whatever weird card game your friends invented.
+
+---
+
+*Built with ☕ and competitive spirit in Denmark*

@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="D7 - Hafte Kasif Tournament Tracker. A card game tournament tracking app for friends in Denmark.">
+  <meta property="og:title" content="D7 - Hafte Kasif Tournament Tracker 🃏🇩🇰">
+  <meta property="og:description" content="A tournament tracking app for Hafte Kasif — a card game that's basically what happens when Uno has a chaotic Danish-Persian cousin.">
+  <!-- Note: Convert og-image.svg to PNG (1200x630px) for better social media compatibility -->
+  <meta property="og:image" content="assets/og-image.svg">
+  <meta property="og:type" content="website">
+  <title>D7 - Hafte Kasif Tournament Tracker 🃏🇩🇰</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Hero Section -->
+  <section class="hero" id="hero">
+    <div class="floating-cards">
+      <div class="card-float card-1">🃏</div>
+      <div class="card-float card-2">♠️</div>
+      <div class="card-float card-3">♥️</div>
+      <div class="card-float card-4">♦️</div>
+      <div class="card-float card-5">🃏</div>
+      <div class="card-float card-6">♣️</div>
+    </div>
+    <div class="hero-content">
+      <h1 class="hero-title">
+        <span class="suit suit-left">🃏</span>
+        D7
+        <span class="suit suit-right">🇩🇰</span>
+      </h1>
+      <p class="hero-subtitle">Hafte Kasif Tournament Tracker</p>
+      <p class="hero-tagline">A card game that's basically what happens when Uno has a chaotic Danish-Persian cousin.</p>
+      <!-- TODO: Update this URL to your actual Netlify app URL -->
+      <a href="https://your-netlify-app.netlify.app" class="cta-button" target="_blank" rel="noopener noreferrer">
+        Play Now 🎮
+      </a>
+    </div>
+  </section>
+
+  <!-- The Game Section -->
+  <section class="game-section" id="game">
+    <div class="container">
+      <h2 class="section-title">What is Hafte Kasif?</h2>
+      <div class="game-content">
+        <div class="game-card">
+          <div class="game-icon">🎴</div>
+          <p class="game-description">
+            Hafte Kasif (also known as <strong>Bisheori</strong>) is a card game variant combining elements of Uno and other trick-taking games. The rules are... let's say <em>locally defined</em> and fiercely debated.
+          </p>
+          <p class="game-description">
+            If you're not part of our group, you probably won't understand the scoring. And that's okay. 😄
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section class="features-section" id="features">
+    <div class="container">
+      <h2 class="section-title">Features</h2>
+      <div class="features-grid">
+        <div class="feature-card" data-feature="tournament">
+          <div class="feature-card-inner">
+            <div class="feature-card-front">
+              <div class="feature-icon">🏆</div>
+              <h3 class="feature-title">Tournament Management</h3>
+            </div>
+            <div class="feature-card-back">
+              <p>Create and manage bi-weekly tournaments with ease. Track every game, every score, every victory.</p>
+            </div>
+          </div>
+        </div>
+        <div class="feature-card" data-feature="players">
+          <div class="feature-card-inner">
+            <div class="feature-card-front">
+              <div class="feature-icon">👥</div>
+              <h3 class="feature-title">Player Profiles</h3>
+            </div>
+            <div class="feature-card-back">
+              <p>Track players with avatars and stats. See who's dominating the leaderboard.</p>
+            </div>
+          </div>
+        </div>
+        <div class="feature-card" data-feature="scoring">
+          <div class="feature-card-inner">
+            <div class="feature-card-front">
+              <div class="feature-icon">📊</div>
+              <h3 class="feature-title">Scoring System</h3>
+            </div>
+            <div class="feature-card-back">
+              <p>Event-sourced scoring with full history. Every point is tracked, every game is recorded.</p>
+            </div>
+          </div>
+        </div>
+        <div class="feature-card" data-feature="mobile">
+          <div class="feature-card-inner">
+            <div class="feature-card-front">
+              <div class="feature-icon">📱</div>
+              <h3 class="feature-title">Mobile-First</h3>
+            </div>
+            <div class="feature-card-back">
+              <p>Built for quick score entry between rounds. Fast, responsive, and optimized for mobile devices.</p>
+            </div>
+          </div>
+        </div>
+        <div class="feature-card" data-feature="dark">
+          <div class="feature-card-inner">
+            <div class="feature-card-front">
+              <div class="feature-icon">🌙</div>
+              <h3 class="feature-title">Dark Mode</h3>
+            </div>
+            <div class="feature-card-back">
+              <p>For those late-night tournament sessions. Easy on the eyes, perfect for extended play.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- The Legends Section -->
+  <section class="legends-section" id="legends">
+    <div class="container">
+      <h2 class="section-title">The Legends</h2>
+      <p class="legends-subtitle">The legendary competitors battling for card game supremacy</p>
+      <div class="legends-grid">
+        <div class="legend-card">
+          <div class="legend-emoji">🎯</div>
+          <h3 class="legend-name">Babak</h3>
+          <p class="legend-role">The Builder</p>
+        </div>
+        <div class="legend-card">
+          <div class="legend-emoji">🃏</div>
+          <h3 class="legend-name">Khosrow</h3>
+          <p class="legend-role">The Joker</p>
+        </div>
+        <div class="legend-card">
+          <div class="legend-emoji">🎲</div>
+          <h3 class="legend-name">Mohsen</h3>
+          <p class="legend-role">The Gambler</p>
+        </div>
+        <div class="legend-card">
+          <div class="legend-emoji">🏆</div>
+          <h3 class="legend-name">Massoud</h3>
+          <p class="legend-role">The Champion</p>
+        </div>
+        <div class="legend-card">
+          <div class="legend-emoji">♠️</div>
+          <h3 class="legend-name">Mehdi</h3>
+          <p class="legend-role">The Spade</p>
+        </div>
+        <div class="legend-card">
+          <div class="legend-emoji">6️⃣</div>
+          <h3 class="legend-name">Hussein 6</h3>
+          <p class="legend-role">The Number</p>
+        </div>
+        <div class="legend-card">
+          <div class="legend-emoji">🎸</div>
+          <h3 class="legend-name">Hussein Gaga</h3>
+          <p class="legend-role">The Rockstar</p>
+        </div>
+        <div class="legend-card">
+          <div class="legend-emoji">♦️</div>
+          <h3 class="legend-name">Behzad</h3>
+          <p class="legend-role">The Diamond</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tech Stack Section -->
+  <section class="tech-section" id="tech">
+    <div class="container">
+      <h2 class="section-title">Tech Stack</h2>
+      <div class="tech-grid">
+        <div class="tech-item">
+          <div class="tech-label">Frontend</div>
+          <div class="tech-value">React 18 + TypeScript + Vite + Tailwind CSS</div>
+        </div>
+        <div class="tech-item">
+          <div class="tech-label">Backend</div>
+          <div class="tech-value">Netlify Functions (Node.js)</div>
+        </div>
+        <div class="tech-item">
+          <div class="tech-label">Database</div>
+          <div class="tech-value">PostgreSQL (Neon)</div>
+        </div>
+        <div class="tech-item">
+          <div class="tech-label">Deployment</div>
+          <div class="tech-value">Netlify</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <p class="footer-text">
+          Built with <span class="coffee">☕</span> and competitive spirit in Denmark
+        </p>
+        <p class="footer-author">
+          <strong>Babak Bandpey</strong> — <a href="https://cocode.dk" target="_blank" rel="noopener noreferrer">cocode.dk</a>
+        </p>
+        <p class="footer-license">
+          MIT — Use it, modify it, make your own tournament tracker for whatever weird card game your friends invented.
+        </p>
+        <p class="footer-links">
+          <!-- TODO: Update this URL to your actual GitHub repository URL -->
+          <a href="https://github.com/yourusername/D7" target="_blank" rel="noopener noreferrer">View on GitHub</a>
+        </p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
