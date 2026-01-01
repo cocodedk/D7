@@ -9,6 +9,80 @@
   <!-- Note: Convert og-image.svg to PNG (1200x630px) for better social media compatibility -->
   <meta property="og:image" content="assets/og-image.svg">
   <meta property="og:type" content="website">
+  <meta property="og:url" content="https://cocodedk.github.io/D7/">
+  <meta property="og:site_name" content="D7 - Hafte Kasif Tournament Tracker">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="D7 - Hafte Kasif Tournament Tracker 🃏🇩🇰">
+  <meta name="twitter:description" content="A tournament tracking app for Hafte Kasif — a card game that's basically what happens when Uno has a chaotic Danish-Persian cousin.">
+  <meta name="twitter:image" content="https://cocodedk.github.io/D7/assets/og-image.svg">
+  <meta name="author" content="Babak Bandpey">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://cocodedk.github.io/D7/">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://cocodedk.github.io/D7/#organization",
+        "name": "D7 - Hafte Kasif Tournament Tracker",
+        "url": "https://cocodedk.github.io/D7/",
+        "founder": {
+          "@type": "Person",
+          "name": "Babak Bandpey",
+          "url": "https://cocode.dk"
+        },
+        "description": "A tournament tracking app for Hafte Kasif card game"
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://cocodedk.github.io/D7/#website",
+        "url": "https://cocodedk.github.io/D7/",
+        "name": "D7 - Hafte Kasif Tournament Tracker",
+        "description": "A tournament tracking app for Hafte Kasif — a card game that's basically what happens when Uno has a chaotic Danish-Persian cousin.",
+        "publisher": {
+          "@id": "https://cocodedk.github.io/D7/#organization"
+        }
+      },
+      {
+        "@type": "WebPage",
+        "@id": "https://cocodedk.github.io/D7/#webpage",
+        "url": "https://cocodedk.github.io/D7/",
+        "name": "D7 - Hafte Kasif Tournament Tracker",
+        "description": "D7 - Hafte Kasif Tournament Tracker. A card game tournament tracking app for friends in Denmark.",
+        "isPartOf": {
+          "@id": "https://cocodedk.github.io/D7/#website"
+        },
+        "about": {
+          "@id": "https://cocodedk.github.io/D7/#software"
+        }
+      },
+      {
+        "@type": "SoftwareApplication",
+        "@id": "https://cocodedk.github.io/D7/#software",
+        "name": "D7 Tournament Tracker",
+        "applicationCategory": "GameApplication",
+        "operatingSystem": "Web",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "description": "A tournament tracking application for Hafte Kasif (Bisheori) card game. Features tournament management, player profiles, event-sourced scoring system, and mobile-first design.",
+        "featureList": [
+          "Tournament Management",
+          "Player Profiles",
+          "Event-sourced Scoring System",
+          "Mobile-First Design",
+          "Dark Mode"
+        ],
+        "softwareVersion": "1.0.0",
+        "programmingLanguage": ["TypeScript", "JavaScript"],
+        "runtimePlatform": "Netlify"
+      }
+    ]
+  }
+  </script>
   <title>D7 - Hafte Kasif Tournament Tracker 🃏🇩🇰</title>
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -17,40 +91,40 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  <main>
   <!-- Hero Section -->
-  <section class="hero" id="hero">
-    <div class="floating-cards">
-      <div class="card-float card-1">🃏</div>
-      <div class="card-float card-2">♠️</div>
-      <div class="card-float card-3">♥️</div>
-      <div class="card-float card-4">♦️</div>
-      <div class="card-float card-5">🃏</div>
-      <div class="card-float card-6">♣️</div>
+  <section class="hero" id="hero" data-content="hero" aria-label="Hero section introducing D7 tournament tracker">
+    <div class="floating-cards" aria-hidden="true">
+      <div class="card-float card-1" aria-label="Decorative joker card">🃏</div>
+      <div class="card-float card-2" aria-label="Decorative spade card">♠️</div>
+      <div class="card-float card-3" aria-label="Decorative heart card">♥️</div>
+      <div class="card-float card-4" aria-label="Decorative diamond card">♦️</div>
+      <div class="card-float card-5" aria-label="Decorative joker card">🃏</div>
+      <div class="card-float card-6" aria-label="Decorative club card">♣️</div>
     </div>
     <div class="hero-content">
       <h1 class="hero-title">
-        <span class="suit suit-left">🃏</span>
+        <span class="suit suit-left" aria-label="Joker card">🃏</span>
         D7
-        <span class="suit suit-right">🇩🇰</span>
+        <span class="suit suit-right" aria-label="Denmark flag">🇩🇰</span>
       </h1>
       <p class="hero-subtitle">Hafte Kasif Tournament Tracker</p>
       <p class="hero-tagline">A card game that's basically what happens when Uno has a chaotic Danish-Persian cousin.</p>
-      <!-- TODO: Update this URL to your actual Netlify app URL -->
-      <a href="https://your-netlify-app.netlify.app" class="cta-button" target="_blank" rel="noopener noreferrer">
+      <a href="https://github.com/cocodedk/D7" class="cta-button" target="_blank" rel="noopener noreferrer" aria-label="View D7 project on GitHub">
         Play Now 🎮
       </a>
     </div>
   </section>
 
   <!-- The Game Section -->
-  <section class="game-section" id="game">
+  <section class="game-section" id="game" data-content="game-description" aria-label="Information about Hafte Kasif card game">
     <div class="container">
-      <h2 class="section-title">What is Hafte Kasif?</h2>
+      <h2 class="section-title" data-heading="game-explanation">What is Hafte Kasif?</h2>
       <div class="game-content">
-        <div class="game-card">
-          <div class="game-icon">🎴</div>
-          <p class="game-description">
-            Hafte Kasif (also known as <strong>Bisheori</strong>) is a card game variant combining elements of Uno and other trick-taking games. The rules are... let's say <em>locally defined</em> and fiercely debated.
+        <div class="game-card" data-game="hafte-kasif" itemscope itemtype="https://schema.org/Game">
+          <div class="game-icon" aria-label="Playing cards">🎴</div>
+          <p class="game-description" itemprop="description">
+            <span itemprop="name">Hafte Kasif</span> (also known as <strong>Bisheori</strong>) is a card game variant combining elements of Uno and other trick-taking games. The rules are... let's say <em>locally defined</em> and fiercely debated.
           </p>
           <p class="game-description">
             If you're not part of our group, you probably won't understand the scoring. And that's okay. 😄
@@ -61,14 +135,14 @@
   </section>
 
   <!-- Features Section -->
-  <section class="features-section" id="features">
+  <section class="features-section" id="features" data-content="features" aria-label="Application features and capabilities">
     <div class="container">
-      <h2 class="section-title">Features</h2>
+      <h2 class="section-title" data-heading="features-list">Features</h2>
       <div class="features-grid">
-        <div class="feature-card" data-feature="tournament">
+        <div class="feature-card" data-feature="tournament" aria-label="Tournament Management feature">
           <div class="feature-card-inner">
             <div class="feature-card-front">
-              <div class="feature-icon">🏆</div>
+              <div class="feature-icon" aria-label="Trophy">🏆</div>
               <h3 class="feature-title">Tournament Management</h3>
             </div>
             <div class="feature-card-back">
@@ -76,10 +150,10 @@
             </div>
           </div>
         </div>
-        <div class="feature-card" data-feature="players">
+        <div class="feature-card" data-feature="players" aria-label="Player Profiles feature">
           <div class="feature-card-inner">
             <div class="feature-card-front">
-              <div class="feature-icon">👥</div>
+              <div class="feature-icon" aria-label="Group of people">👥</div>
               <h3 class="feature-title">Player Profiles</h3>
             </div>
             <div class="feature-card-back">
@@ -87,10 +161,10 @@
             </div>
           </div>
         </div>
-        <div class="feature-card" data-feature="scoring">
+        <div class="feature-card" data-feature="scoring" aria-label="Scoring System feature">
           <div class="feature-card-inner">
             <div class="feature-card-front">
-              <div class="feature-icon">📊</div>
+              <div class="feature-icon" aria-label="Chart">📊</div>
               <h3 class="feature-title">Scoring System</h3>
             </div>
             <div class="feature-card-back">
@@ -98,10 +172,10 @@
             </div>
           </div>
         </div>
-        <div class="feature-card" data-feature="mobile">
+        <div class="feature-card" data-feature="mobile" aria-label="Mobile-First feature">
           <div class="feature-card-inner">
             <div class="feature-card-front">
-              <div class="feature-icon">📱</div>
+              <div class="feature-icon" aria-label="Mobile phone">📱</div>
               <h3 class="feature-title">Mobile-First</h3>
             </div>
             <div class="feature-card-back">
@@ -109,10 +183,10 @@
             </div>
           </div>
         </div>
-        <div class="feature-card" data-feature="dark">
+        <div class="feature-card" data-feature="dark" aria-label="Dark Mode feature">
           <div class="feature-card-inner">
             <div class="feature-card-front">
-              <div class="feature-icon">🌙</div>
+              <div class="feature-icon" aria-label="Moon">🌙</div>
               <h3 class="feature-title">Dark Mode</h3>
             </div>
             <div class="feature-card-back">
@@ -125,48 +199,48 @@
   </section>
 
   <!-- The Legends Section -->
-  <section class="legends-section" id="legends">
+  <section class="legends-section" id="legends" data-content="players" aria-label="List of tournament players and their roles">
     <div class="container">
-      <h2 class="section-title">The Legends</h2>
-      <p class="legends-subtitle">The legendary competitors battling for card game supremacy</p>
+      <h2 class="section-title" data-heading="players-list">The Legends</h2>
+      <p class="legends-subtitle" data-description="players-intro">The legendary competitors battling for card game supremacy</p>
       <div class="legends-grid">
-        <div class="legend-card">
-          <div class="legend-emoji">🎯</div>
+        <div class="legend-card" aria-label="Player: Babak, The Builder">
+          <div class="legend-emoji" aria-label="Target">🎯</div>
           <h3 class="legend-name">Babak</h3>
           <p class="legend-role">The Builder</p>
         </div>
-        <div class="legend-card">
-          <div class="legend-emoji">🃏</div>
+        <div class="legend-card" aria-label="Player: Khosrow, The Joker">
+          <div class="legend-emoji" aria-label="Joker card">🃏</div>
           <h3 class="legend-name">Khosrow</h3>
           <p class="legend-role">The Joker</p>
         </div>
-        <div class="legend-card">
-          <div class="legend-emoji">🎲</div>
+        <div class="legend-card" aria-label="Player: Mohsen, The Gambler">
+          <div class="legend-emoji" aria-label="Dice">🎲</div>
           <h3 class="legend-name">Mohsen</h3>
           <p class="legend-role">The Gambler</p>
         </div>
-        <div class="legend-card">
-          <div class="legend-emoji">🏆</div>
+        <div class="legend-card" aria-label="Player: Massoud, The Champion">
+          <div class="legend-emoji" aria-label="Trophy">🏆</div>
           <h3 class="legend-name">Massoud</h3>
           <p class="legend-role">The Champion</p>
         </div>
-        <div class="legend-card">
-          <div class="legend-emoji">♠️</div>
+        <div class="legend-card" aria-label="Player: Mehdi, The Spade">
+          <div class="legend-emoji" aria-label="Spade card">♠️</div>
           <h3 class="legend-name">Mehdi</h3>
           <p class="legend-role">The Spade</p>
         </div>
-        <div class="legend-card">
-          <div class="legend-emoji">6️⃣</div>
+        <div class="legend-card" aria-label="Player: Hussein 6, The Number">
+          <div class="legend-emoji" aria-label="Number six">6️⃣</div>
           <h3 class="legend-name">Hussein 6</h3>
           <p class="legend-role">The Number</p>
         </div>
-        <div class="legend-card">
-          <div class="legend-emoji">🎸</div>
+        <div class="legend-card" aria-label="Player: Hussein Gaga, The Rockstar">
+          <div class="legend-emoji" aria-label="Guitar">🎸</div>
           <h3 class="legend-name">Hussein Gaga</h3>
           <p class="legend-role">The Rockstar</p>
         </div>
-        <div class="legend-card">
-          <div class="legend-emoji">♦️</div>
+        <div class="legend-card" aria-label="Player: Behzad, The Diamond">
+          <div class="legend-emoji" aria-label="Diamond card">♦️</div>
           <h3 class="legend-name">Behzad</h3>
           <p class="legend-role">The Diamond</p>
         </div>
@@ -175,9 +249,9 @@
   </section>
 
   <!-- Tech Stack Section -->
-  <section class="tech-section" id="tech">
+  <section class="tech-section" id="tech" data-content="tech-stack" aria-label="Technology stack and implementation details">
     <div class="container">
-      <h2 class="section-title">Tech Stack</h2>
+      <h2 class="section-title" data-heading="tech-details">Tech Stack</h2>
       <div class="tech-grid">
         <div class="tech-item">
           <div class="tech-label">Frontend</div>
@@ -204,7 +278,7 @@
     <div class="container">
       <div class="footer-content">
         <p class="footer-text">
-          Built with <span class="coffee">☕</span> and competitive spirit in Denmark
+          Built with <span class="coffee" aria-label="Coffee">☕</span> and competitive spirit in Denmark
         </p>
         <p class="footer-author">
           <strong>Babak Bandpey</strong> — <a href="https://cocode.dk" target="_blank" rel="noopener noreferrer">cocode.dk</a>
@@ -213,12 +287,12 @@
           MIT — Use it, modify it, make your own tournament tracker for whatever weird card game your friends invented.
         </p>
         <p class="footer-links">
-          <!-- TODO: Update this URL to your actual GitHub repository URL -->
-          <a href="https://github.com/yourusername/D7" target="_blank" rel="noopener noreferrer">View on GitHub</a>
+          <a href="https://github.com/cocodedk/D7" target="_blank" rel="noopener noreferrer" aria-label="View D7 project repository on GitHub">View on GitHub</a>
         </p>
       </div>
     </div>
   </footer>
+  </main>
 
   <script src="script.js"></script>
 </body>
