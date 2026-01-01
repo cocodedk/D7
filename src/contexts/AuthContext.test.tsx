@@ -36,7 +36,7 @@ describe('AuthContext', () => {
 
     expect(result.current.isAuthenticated).toBe(true)
     expect(localStorage.getItem('auth_token')).toBe('test-token')
-    expect(api.post).toHaveBeenCalledWith('/auth/login', { password: 'password123' })
+    expect(api.post).toHaveBeenCalledWith('/auth-login', { password: 'password123' })
   })
 
   it('should handle login error', async () => {

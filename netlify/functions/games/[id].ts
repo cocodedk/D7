@@ -20,9 +20,12 @@ interface ScoreEvent {
 
 const handler: Handler = requireAuth(async (event) => {
   try {
-    const id = event.path.split('/').pop()
+    // Improve ID extraction with validation
+    const pathParts = event.path.split('/').filter(Boolean)
+    const id = pathParts[pathParts.length - 1]
 
-    if (!id) {
+    // Validate UUID format
+    if (!id || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
       return errorResponse('Game ID is required', 400)
     }
 
@@ -57,9 +60,11 @@ const handler: Handler = requireAuth(async (event) => {
     }
 
     if (event.httpMethod === 'DELETE') {
-      // Check if game was created within last 60 seconds
-      const game = await queryOne<{ created_at: string }>(
-        'SELECT created_at FROM games WHERE id = $1',
+      // Check if game was created within last 60 seconds using PostgreSQL's EXTRACT
+      // This avoids JavaScript date parsing issues and timezone problems
+      const game = await queryOne<{ age_seconds: number }>(
+        `SELECT EXTRACT(EPOCH FROM (NOW() - created_at))::integer as age_seconds
+         FROM games WHERE id = $1`,
         [id]
       )
 
@@ -67,11 +72,10 @@ const handler: Handler = requireAuth(async (event) => {
         return errorResponse('Game not found', 404)
       }
 
-      const createdAt = new Date(game.created_at).getTime()
-      const now = Date.now()
-      const ageSeconds = (now - createdAt) / 1000
+      // Debug logging to help identify timing issues
+      console.log(`DELETE game ${id}: age_seconds=${game.age_seconds}`)
 
-      if (ageSeconds > 60) {
+      if (game.age_seconds > 60) {
         return errorResponse('Game can only be deleted within 60 seconds of creation', 400)
       }
 

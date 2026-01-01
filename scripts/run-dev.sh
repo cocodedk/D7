@@ -55,12 +55,24 @@ echo -e "${BLUE}The server will start on http://localhost:8888 by default${NC}"
 echo -e "${BLUE}API functions will be available at http://localhost:8888/api/*${NC}"
 echo ""
 
-# Check if --offline flag is already in arguments
-OFFLINE_FLAG=""
-if [[ ! "$*" =~ --offline ]]; then
-  OFFLINE_FLAG="--offline"
+# Check if project is linked to Netlify
+if [ ! -f ".netlify/state.json" ]; then
+  echo -e "${YELLOW}Project not linked to Netlify.${NC}"
+  echo -e "${BLUE}To link this project, run: netlify link${NC}"
+  echo -e "${BLUE}Or use --offline flag to run without linking${NC}"
+  echo ""
+
+  # If --offline is not in arguments, ask or use offline mode
+  if [[ ! "$*" =~ --offline ]]; then
+    echo -e "${YELLOW}Running in offline mode (use --offline explicitly to suppress this message)${NC}"
+    echo ""
+    OFFLINE_FLAG="--offline"
+  fi
+else
+  echo -e "${GREEN}Project linked to Netlify site${NC}"
+  echo ""
+  OFFLINE_FLAG=""
 fi
 
-# Run Netlify dev with offline mode to avoid linking to other projects
-# This ensures it uses only the local netlify.toml configuration
+# Run Netlify dev
 $NETLIFY_CMD dev $OFFLINE_FLAG "$@"

@@ -20,6 +20,12 @@ const handler: Handler = requireAuth(async (event) => {
       return errorResponse('Tournament ID is required', 400)
     }
 
+    // Debug: Check if tournament exists at all (regardless of state)
+    const anyTournament = await queryOne<Tournament>(
+      'SELECT id, name, state FROM tournaments WHERE id = $1',
+      [id]
+    )
+
     // Get tournament to verify name
     const tournament = await queryOne<Tournament>(
       "SELECT id, name, state FROM tournaments WHERE id = $1 AND state = 'active'",
@@ -27,7 +33,14 @@ const handler: Handler = requireAuth(async (event) => {
     )
 
     if (!tournament) {
-      return errorResponse('Tournament not found or not active', 404)
+      // Provide more detailed error message for debugging
+      if (!anyTournament) {
+        return errorResponse(`Tournament not found: ${id}`, 404)
+      }
+      return errorResponse(
+        `Tournament found but not active. Current state: ${anyTournament.state}`,
+        404
+      )
     }
 
     // Parse confirmation body

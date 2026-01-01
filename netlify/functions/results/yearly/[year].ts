@@ -43,9 +43,15 @@ const handler: Handler = requireAuth(async (event: HandlerEvent) => {
     // Calculate scores
     const scores = calculateTournamentScores(scoreEvents, playerIds)
 
+    // Convert scores object to array format
+    const scoresArray = Object.entries(scores).map(([playerId, score]) => ({
+      playerId,
+      ...score,
+    }))
+
     return jsonResponse({
       year: yearInt,
-      scores,
+      scores: scoresArray,
     })
   } catch (error) {
     console.error('Error:', error)

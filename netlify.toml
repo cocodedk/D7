@@ -5,6 +5,12 @@
 [build.environment]
   NODE_VERSION = "18"
 
+[dev]
+  targetPort = 3000
+
+[functions]
+  directory = "netlify/functions"
+
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/:splat"

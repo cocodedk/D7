@@ -14,10 +14,17 @@ export default function LoginPage() {
     setError(null)
     setLoading(true)
 
+    // #region agent log
+    fetch('http://127.0.0.1:7245/ingest/2e161807-a777-4f0a-9e48-5c755a702a4a',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'LoginPage.tsx:12',message:'Form submit',data:{passwordLength:password.length,passwordValue:password.substring(0,3)+'***'},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'D'})}).catch(()=>{});
+    // #endregion
+
     try {
       await login(password)
       navigate('/')
     } catch (err) {
+      // #region agent log
+      fetch('http://127.0.0.1:7245/ingest/2e161807-a777-4f0a-9e48-5c755a702a4a',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'LoginPage.tsx:21',message:'Login error in UI',data:{errorMessage:err instanceof Error?err.message:String(err)},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'E'})}).catch(()=>{});
+      // #endregion
       setError(err instanceof Error ? err.message : 'Invalid password')
     } finally {
       setLoading(false)

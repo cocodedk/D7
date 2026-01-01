@@ -16,6 +16,11 @@ describe('API Client', () => {
       localStorage.setItem('auth_token', 'test-token')
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
+        status: 200,
+        statusText: 'OK',
+        headers: {
+          get: vi.fn(() => 'application/json'),
+        },
         json: async () => ({ data: 'test' }),
       })
 
@@ -34,6 +39,11 @@ describe('API Client', () => {
     it('should make GET request without authentication token', async () => {
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
+        status: 200,
+        statusText: 'OK',
+        headers: {
+          get: vi.fn(() => 'application/json'),
+        },
         json: async () => ({ data: 'test' }),
       })
 
@@ -54,6 +64,11 @@ describe('API Client', () => {
       localStorage.setItem('auth_token', 'test-token')
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
+        status: 200,
+        statusText: 'OK',
+        headers: {
+          get: vi.fn(() => 'application/json'),
+        },
         json: async () => ({ id: '1' }),
       })
 
@@ -73,6 +88,11 @@ describe('API Client', () => {
     it('should make POST request without data', async () => {
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
+        status: 200,
+        statusText: 'OK',
+        headers: {
+          get: vi.fn(() => 'application/json'),
+        },
         json: async () => ({ success: true }),
       })
 
@@ -94,6 +114,11 @@ describe('API Client', () => {
       localStorage.setItem('auth_token', 'test-token')
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
+        status: 200,
+        statusText: 'OK',
+        headers: {
+          get: vi.fn(() => 'application/json'),
+        },
         json: async () => ({ updated: true }),
       })
 
@@ -116,6 +141,11 @@ describe('API Client', () => {
       localStorage.setItem('auth_token', 'test-token')
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
+        status: 200,
+        statusText: 'OK',
+        headers: {
+          get: vi.fn(() => 'application/json'),
+        },
         json: async () => ({ deleted: true }),
       })
 
@@ -142,6 +172,10 @@ describe('API Client', () => {
       global.fetch = vi.fn().mockResolvedValue({
         ok: false,
         status: 401,
+        statusText: 'Unauthorized',
+        headers: {
+          get: vi.fn(() => 'application/json'),
+        },
         json: async () => ({ error: 'Unauthorized' }),
       })
 
@@ -156,6 +190,10 @@ describe('API Client', () => {
       global.fetch = vi.fn().mockResolvedValue({
         ok: false,
         status: 404,
+        statusText: 'Not Found',
+        headers: {
+          get: vi.fn(() => 'application/json'),
+        },
         json: async () => ({ error: 'Not found' }),
       })
 
@@ -172,6 +210,10 @@ describe('API Client', () => {
       global.fetch = vi.fn().mockResolvedValue({
         ok: false,
         status: 500,
+        statusText: 'Internal Server Error',
+        headers: {
+          get: vi.fn(() => 'application/json'),
+        },
         json: async () => {
           throw new Error('Invalid JSON')
         },

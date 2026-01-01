@@ -1,5 +1,10 @@
 import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
+import { resolve } from 'path'
+import { config } from 'dotenv'
+
+// Load environment variables from .env file
+config({ path: resolve(process.cwd(), '.env') })
 
 export default defineConfig({
   plugins: [react()],
@@ -7,6 +12,11 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: ['./src/test-setup.ts'],
+    globalSetup: ['./src/integration/setup.ts'],
+    globalTeardown: ['./src/integration/teardown.ts'],
+    // Run tests sequentially to avoid database conflicts in integration tests
+    maxWorkers: 1,
+    minWorkers: 1,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html', 'lcov'],
@@ -15,6 +25,7 @@ export default defineConfig({
         'src/test-utils.tsx',
         'src/test-helpers.ts',
         'src/test-setup.ts',
+        'src/integration/**',
         '**/*.test.{ts,tsx}',
         '**/*.config.{ts,js}',
       ],
