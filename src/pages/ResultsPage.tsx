@@ -55,7 +55,11 @@ export default function ResultsPage() {
           <option value="">-- Select Tournament --</option>
           {tournaments.map((t) => (
             <option key={t.id} value={t.id}>
-              {t.name} ({t.state})
+              {new Date(t.date).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              })} ({t.state})
             </option>
           ))}
         </select>

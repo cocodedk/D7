@@ -1,5 +1,3 @@
-import { createHandlerEvent } from './function-invoker'
-
 /**
  * Create Authorization header with Bearer token
  */
@@ -92,7 +90,7 @@ export async function verifyRecordExistsInHandlerDb(
   idColumn: string = 'id',
   retries: number = 3
 ): Promise<boolean> {
-  const { queryOne, getPoolConnectionString, getDbPool } = await import('../../netlify/functions/_shared/db')
+  const { queryOne, getPoolConnectionString } = await import('../../netlify/functions/_shared/db')
   const poolUrl = getPoolConnectionString()
   const testDbUrl = process.env.TEST_DATABASE_URL
 

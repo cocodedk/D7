@@ -28,7 +28,7 @@ export default function GamePage() {
     )
   }
 
-  const tournamentPlayers = players.filter((p) => true) // All players for now
+  const tournamentPlayers = players.filter((_p) => true) // All players for now
 
   const handleTap = (playerId: string, type: 'I' | 'X') => {
     setEvents((prev) => [...prev, { playerId, type }])
