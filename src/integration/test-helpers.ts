@@ -22,9 +22,9 @@ export function createAuthHeaders(token: string): Record<string, string> {
 /**
  * Extract token from login response
  */
-export function extractToken(response: { body?: { token?: string } }): string | null {
+export function extractToken(response: { body?: unknown }): string | null {
   if (response.body && typeof response.body === 'object' && 'token' in response.body) {
-    return response.body.token as string
+    return (response.body as { token?: string }).token as string
   }
   return null
 }

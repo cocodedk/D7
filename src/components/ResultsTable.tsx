@@ -7,6 +7,12 @@ interface TournamentResults {
     plusClusters: number
     minusClusters: number
     netScore: number
+    player?: {
+      id: string
+      name: string
+      nickname: string
+      avatar: string | null
+    } | null
   }
 }
 
@@ -20,7 +26,8 @@ export default function ResultsTable({ results, tournamentId: _tournamentId }: R
 
   const sortedResults = Object.entries(results)
     .map(([playerId, score]) => {
-      const player = players.find((p) => p.id === playerId)
+      // Use player info from results if available, otherwise fall back to usePlayers hook
+      const player = score.player || players.find((p) => p.id === playerId)
       return {
         player: player || { id: playerId, nickname: 'Unknown', name: 'Unknown', avatar: null, created_at: '' },
         score,

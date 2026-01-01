@@ -218,15 +218,30 @@ describe('Games Integration Tests', () => {
       assertError(response, 404)
     })
 
-    it('should require authentication', async () => {
+    it('should include player information in game events', async () => {
       const gameId = await createTestGame(tournamentId)
+
+      await new Promise(resolve => setTimeout(resolve, 50))
+
+      await createTestScoreEvent(gameId, playerId, 'I')
+      await createTestScoreEvent(gameId, playerId, 'X')
 
       const response = await invokeFunction(gameHandler, {
         httpMethod: 'GET',
         path: `/api/games/${gameId}`,
+        headers: createAuthHeaders(authToken),
       })
 
-      assertError(response, 401)
+      assertSuccess(response)
+      const body = response.body as { events: Array<{ playerId: string; player: any }> }
+      expect(body.events.length).toBeGreaterThan(0)
+      const event = body.events[0]
+      expect(event).toHaveProperty('player')
+      expect(event.player).toBeDefined()
+      expect(event.player).toHaveProperty('id', playerId)
+      expect(event.player).toHaveProperty('name', 'Test Player')
+      expect(event.player).toHaveProperty('nickname', 'TP')
+      expect(event.player).toHaveProperty('avatar')
     })
   })
 

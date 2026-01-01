@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { invokeFunction } from './function-invoker'
 import { createAuthHeaders, extractToken, assertSuccess, assertError, generateNonExistentId, getTestAdminPassword } from './test-helpers'
 import { resetTestDatabase } from './db-test-setup'
-import { createTestTournament, cleanupTestData } from './test-data'
+import { createTestPlayer, createTestTournament, createTestGame, createTestScoreEvent, cleanupTestData } from './test-data'
 import { handler as tournamentsHandler } from '../../netlify/functions/tournaments/index'
 import { handler as activeHandler } from '../../netlify/functions/tournaments/active'
 import { handler as startHandler } from '../../netlify/functions/tournaments/[id]/start'
@@ -327,13 +327,20 @@ describe('Tournaments Integration Tests', () => {
   })
 
   describe('GET /api/tournaments/:id/results', () => {
-    it('should return tournament results', async () => {
+    it('should return tournament results without authentication', async () => {
       const tournamentId = await createTestTournament({ state: 'active' })
+      const playerId = await createTestPlayer({ name: 'Test Player', nickname: 'TP' })
+
+      await new Promise(resolve => setTimeout(resolve, 50))
+
+      const gameId = await createTestGame(tournamentId)
+      await new Promise(resolve => setTimeout(resolve, 50))
+      await createTestScoreEvent(gameId, playerId, 'I')
 
       const response = await invokeFunction(resultsHandler, {
         httpMethod: 'GET',
         path: `/api/tournaments/${tournamentId}/results`,
-        headers: createAuthHeaders(authToken),
+        // No auth headers - public endpoint
       })
 
       assertSuccess(response)
@@ -343,15 +350,31 @@ describe('Tournaments Integration Tests', () => {
       expect(response.body).not.toBeNull()
     })
 
-    it('should require authentication', async () => {
-      const tournamentId = await createTestTournament()
+    it('should include player information in tournament results', async () => {
+      const tournamentId = await createTestTournament({ state: 'active' })
+      const playerId = await createTestPlayer({ name: 'Tournament Player', nickname: 'TP' })
+
+      await new Promise(resolve => setTimeout(resolve, 50))
+
+      const gameId = await createTestGame(tournamentId)
+      await new Promise(resolve => setTimeout(resolve, 50))
+      await createTestScoreEvent(gameId, playerId, 'I')
 
       const response = await invokeFunction(resultsHandler, {
         httpMethod: 'GET',
         path: `/api/tournaments/${tournamentId}/results`,
+        headers: createAuthHeaders(authToken),
       })
 
-      assertError(response, 401)
+      assertSuccess(response)
+      const results = response.body as Record<string, any>
+      expect(results[playerId]).toBeDefined()
+      expect(results[playerId]).toHaveProperty('player')
+      expect(results[playerId].player).toBeDefined()
+      expect(results[playerId].player).toHaveProperty('id', playerId)
+      expect(results[playerId].player).toHaveProperty('name', 'Tournament Player')
+      expect(results[playerId].player).toHaveProperty('nickname', 'TP')
+      expect(results[playerId].player).toHaveProperty('avatar')
     })
   })
 })

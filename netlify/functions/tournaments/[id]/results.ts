@@ -1,5 +1,4 @@
 import { Handler } from '@netlify/functions'
-import { requireAuth } from '../../_shared/auth'
 import { jsonResponse, errorResponse } from '../../_shared/utils'
 import { query } from '../../_shared/db'
 import { calculateTournamentScores, type ScoreEvent } from '../../_shared/scoring'
@@ -9,7 +8,14 @@ interface ScoreEventRow {
   type: 'I' | 'X'
 }
 
-const handler: Handler = requireAuth(async (event) => {
+interface PlayerInfo {
+  id: string
+  name: string
+  nickname: string
+  avatar_data: Buffer | null
+}
+
+const handler: Handler = async (event) => {
   try {
     const id = event.path.split('/').slice(-2, -1)[0]
 
@@ -30,6 +36,17 @@ const handler: Handler = requireAuth(async (event) => {
     // Get unique player IDs
     const playerIds = [...new Set(events.map((e) => e.player_id))]
 
+    // Get player information
+    const players = await query<PlayerInfo>(
+      `SELECT id, name, nickname, avatar_data
+       FROM players
+       WHERE id = ANY($1::uuid[]) AND deleted_at IS NULL`,
+      [playerIds]
+    )
+
+    // Create player map for quick lookup
+    const playerMap = new Map(players.map((p) => [p.id, p]))
+
     // Convert to ScoreEvent format
     const scoreEvents: ScoreEvent[] = events.map((e) => ({
       playerId: e.player_id,
@@ -39,11 +56,28 @@ const handler: Handler = requireAuth(async (event) => {
     // Calculate scores using scoring engine
     const scores = calculateTournamentScores(scoreEvents, playerIds)
 
-    return jsonResponse(scores)
+    // Add player information to scores
+    const scoresWithPlayers = Object.entries(scores).reduce((acc, [playerId, score]) => {
+      const player = playerMap.get(playerId)
+      acc[playerId] = {
+        ...score,
+        player: player
+          ? {
+              id: player.id,
+              name: player.name,
+              nickname: player.nickname,
+              avatar: player.avatar_data ? player.avatar_data.toString('base64') : null,
+            }
+          : null,
+      }
+      return acc
+    }, {} as Record<string, any>)
+
+    return jsonResponse(scoresWithPlayers)
   } catch (error) {
     console.error('Error:', error)
     return errorResponse('Internal server error', 500)
   }
-})
+}
 
 export { handler }

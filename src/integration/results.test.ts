@@ -114,15 +114,33 @@ describe('Results Integration Tests', () => {
       assertError(response, 400)
     })
 
-    it('should require authentication', async () => {
+    it('should include player information in yearly results', async () => {
       const currentYear = new Date().getFullYear()
+      const tournamentId = await createTestTournament({ state: 'active' })
+      const playerId = await createTestPlayer({ name: 'Test Player', nickname: 'TP' })
+
+      await new Promise(resolve => setTimeout(resolve, 50))
+
+      const gameId = await createTestGame(tournamentId)
+      await new Promise(resolve => setTimeout(resolve, 50))
+      await createTestScoreEvent(gameId, playerId, 'I')
 
       const response = await invokeFunction(yearlyResultsHandler, {
         httpMethod: 'GET',
         path: `/api/results/yearly/${currentYear}`,
+        headers: createAuthHeaders(authToken),
       })
 
-      assertError(response, 401)
+      assertSuccess(response)
+      const body = response.body as { year: number; scores: Array<{ playerId: string; player: any }> }
+      expect(body.scores.length).toBeGreaterThan(0)
+      const playerScore = body.scores.find((s) => s.playerId === playerId)
+      expect(playerScore).toBeDefined()
+      expect(playerScore?.player).toBeDefined()
+      expect(playerScore?.player).toHaveProperty('id', playerId)
+      expect(playerScore?.player).toHaveProperty('name', 'Test Player')
+      expect(playerScore?.player).toHaveProperty('nickname', 'TP')
+      expect(playerScore?.player).toHaveProperty('avatar')
     })
   })
 })

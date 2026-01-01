@@ -6,16 +6,19 @@ async function getAuthToken(): Promise<string | null> {
 
 async function request<T>(
   endpoint: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
+  skipAuth: boolean = false
 ): Promise<T> {
-  const token = await getAuthToken()
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...(options.headers as Record<string, string>),
   }
 
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`
+  if (!skipAuth) {
+    const token = await getAuthToken()
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`
+    }
   }
 
   const url = `${API_BASE}${endpoint}`;
@@ -26,7 +29,7 @@ async function request<T>(
   })
 
   if (!response.ok) {
-    if (response.status === 401) {
+    if (response.status === 401 && !skipAuth) {
       localStorage.removeItem('auth_token')
       window.location.href = '/login'
     }
@@ -51,6 +54,9 @@ export const api = {
       body: data ? JSON.stringify(data) : undefined,
     }),
   delete: <T>(endpoint: string) => request<T>(endpoint, { method: 'DELETE' }),
+  public: {
+    get: <T>(endpoint: string) => request<T>(endpoint, { method: 'GET' }, true),
+  },
 }
 
 /**
