@@ -1,0 +1,9 @@
+---
+alwaysApply: true
+---
+
+# Documentation Standards
+
+- **Location**: All documentation must be placed in `./docs` directory.
+- **Modularization**: Documentation must be modularized into separate folders by topic or feature.
+- **File Length**: Documentation files must not exceed 100 lines. Split longer documents into multiple focused files.

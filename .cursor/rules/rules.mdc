@@ -1,0 +1,19 @@
+---
+alwaysApply: true
+---
+
+# Coding Standards
+
+## Code Organization
+
+- **Modularization**: All code must be modularized. Break down functionality into logical, reusable modules and components.
+
+- **File Length**: Files must not exceed 150 lines of code. If a file approaches this limit, refactor it into smaller, more focused modules.
+
+- **Class Organization**: Each class must have its own file. One class per file to maintain clear separation of concerns and improve code readability.
+
+- **DRY Principle**: Don't Repeat Yourself (DRY) must be strictly applied. Avoid code duplication by extracting common functionality into reusable functions, classes, or modules.
+
+## Execution Environment
+
+- **See `environments.mdc`**: Before running any commands, executing tests, or setting up development tools, refer to `./.cursor/rules/environments.mdc` to understand where commands should be executed (Docker containers vs local host) and how the hybrid development architecture works. This is critical because the backend runs in Docker while the frontend runs locally, and incorrect execution context will cause failures.

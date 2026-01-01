@@ -1,0 +1,185 @@
+---
+alwaysApply: false
+---
+
+# Execution Environments
+
+This document describes where different parts of the CV Generator application run and how to execute commands in each environment.
+
+## Architecture Overview
+
+The CV Generator uses a hybrid development setup:
+- **Backend (FastAPI)**: Runs in Docker container
+- **Neo4j Database**: Runs in Docker container
+- **Frontend (React/Vite)**: Runs locally on host machine
+- **Tests**: Backend tests run in Docker, frontend tests run locally
+
+## Docker Containers
+
+### Backend Container (`cv-app`)
+- **Service name**: `app` in docker-compose.yml
+- **Container name**: `cv-app`
+- **Port**: 8000 (mapped to host)
+- **What runs here**:
+  - FastAPI backend application
+  - Python dependencies (from requirements.txt)
+  - Backend tests (pytest)
+  - Backend linting (flake8)
+  - Backend formatting (black)
+
+### Neo4j Container (`cv-neo4j`)
+- **Service name**: `neo4j` in docker-compose.yml
+- **Container name**: `cv-neo4j`
+- **Ports**: 7474 (HTTP), 7687 (Bolt)
+- **What runs here**:
+  - Neo4j database server
+  - Database storage and operations
+
+## Local Host Machine
+
+### Frontend Development
+- **What runs here**:
+  - Vite dev server (port 5173)
+  - Frontend tests (Vitest)
+  - Frontend linting (ESLint)
+  - Frontend formatting (Prettier)
+  - Node.js dependencies (from package.json)
+
+## Command Execution Locations
+
+### Backend Commands (Run in Docker Container)
+
+All backend commands should be executed inside the Docker container:
+
+```bash
+# Tests
+docker-compose exec -T app pytest
+# or via npm script: npm run test:backend
+
+# Linting
+docker-compose exec -T app flake8 backend
+# or via npm script: npm run lint:backend
+
+# Formatting
+docker-compose exec -T app black backend
+# or via npm script: npm run format:backend
+
+# Interactive shell
+docker-compose exec app bash
+```
+
+**Note**: If container is not running, use `docker-compose run --rm app <command>` instead of `exec`.
+
+### Frontend Commands (Run Locally)
+
+All frontend commands run on the host machine:
+
+```bash
+# Development server
+npm run dev
+# or: cd frontend && npm run dev
+
+# Tests
+npm run test:frontend
+# or: cd frontend && vitest run
+
+# Linting
+npm run lint:frontend
+# or: eslint frontend/src --ext .ts,.tsx
+
+# Formatting
+npm run format:frontend
+# or: prettier --write "frontend/src/**/*.{ts,tsx,css}"
+```
+
+### Database Commands
+
+Neo4j runs in Docker, access via:
+- **Browser UI**: http://localhost:7474
+- **Bolt connection**: bolt://localhost:7687
+- **Cypher shell**: `docker-compose exec neo4j cypher-shell`
+
+## Pre-commit Hooks
+
+Pre-commit hooks run on the **host machine** but execute commands in their respective environments:
+
+- **Backend hooks**: Execute via `docker-compose exec` or `docker-compose run`
+- **Frontend hooks**: Execute directly on host (npm/node available locally)
+
+## Development Workflow
+
+### Starting Development
+
+1. **Start Docker services** (backend + Neo4j):
+   ```bash
+   docker-compose up -d
+   ```
+
+2. **Start frontend dev server** (local):
+   ```bash
+   npm run dev
+   ```
+
+   Or use the convenience script:
+   ```bash
+   npm run dev:full
+   # or
+   ./scripts/run-dev.sh
+   ```
+
+### Running Tests
+
+- **Backend tests**: Run in Docker container
+  ```bash
+   npm run test:backend
+   ```
+
+- **Frontend tests**: Run locally
+  ```bash
+   npm run test:frontend
+   ```
+
+- **All tests**:
+  ```bash
+   npm test
+   ```
+
+### Code Quality Checks
+
+- **Backend linting/formatting**: Run in Docker
+  ```bash
+   npm run lint:backend
+   npm run format:backend
+   ```
+
+- **Frontend linting/formatting**: Run locally
+  ```bash
+   npm run lint:frontend
+   npm run format:frontend
+   ```
+
+## Important Notes
+
+1. **Backend dependencies**: Installed in Docker image during build. Rebuild with `docker-compose build` if requirements.txt changes.
+
+2. **Frontend dependencies**: Installed locally with `npm install` in project root.
+
+3. **Volume mounts**: Backend code is mounted as volume in docker-compose.yml, so code changes are reflected immediately (with auto-reload).
+
+4. **Test dependencies**: All test packages are in requirements.txt, so they're available in the Docker container.
+
+5. **Pre-commit**: Requires Docker to be running for backend checks. If Docker is not running, pre-commit hooks for backend will fail.
+
+## Troubleshooting
+
+### "Container not found" errors
+- Ensure Docker is running: `docker ps`
+- Start containers: `docker-compose up -d`
+
+### "Command not found" in container
+- Rebuild container: `docker-compose build`
+- Or install in running container: `docker-compose exec app pip install <package>`
+
+### Tests fail in pre-commit
+- Ensure Docker containers are running before committing
+- Or use `--no-verify` flag (not recommended)
