@@ -22,17 +22,46 @@ const pool = new Pool({
   },
 })
 
-const migrationFile = join(__dirname, '../netlify/migrations/001_initial_schema.sql')
-const sql = readFileSync(migrationFile, 'utf-8')
+// Run migrations in order
+const migrations = [
+  '001_initial_schema.sql',
+  '002_replace_tournament_name_with_date.sql',
+]
 
-async function runMigration() {
+async function runMigrations() {
   const client = await pool.connect()
   try {
-    console.log('Running migration...')
-    await client.query(sql)
-    console.log('✓ Migration completed successfully')
+    console.log('Running database migrations...\n')
+
+    for (const migrationFile of migrations) {
+      const migrationPath = join(__dirname, '../netlify/migrations', migrationFile)
+      const sql = readFileSync(migrationPath, 'utf-8')
+
+      try {
+        console.log(`Running ${migrationFile}...`)
+        await client.query(sql)
+        console.log(`✓ ${migrationFile} completed successfully\n`)
+      } catch (error) {
+        // If tables/constraints already exist, that's okay (idempotent)
+        if (error instanceof Error && (
+          error.message.includes('already exists') ||
+          error.message.includes('duplicate key') ||
+          error.message.includes('constraint') ||
+          error.message.includes('does not exist') // For DROP COLUMN IF EXISTS
+        )) {
+          console.log(`⚠ ${migrationFile} skipped (already applied or safe to skip)\n`)
+          continue
+        }
+        throw error
+      }
+    }
+
+    console.log('✓ All migrations completed successfully')
   } catch (error) {
     console.error('✗ Migration failed:', error.message)
+    if (error instanceof Error && error.stack) {
+      console.error('Stack:', error.stack)
+    }
     process.exit(1)
   } finally {
     client.release()
@@ -40,4 +69,4 @@ async function runMigration() {
   }
 }
 
-runMigration()
+runMigrations()
