@@ -28,8 +28,19 @@ const handler: Handler = requireAuth(async () => {
     console.log('[tournaments/active] Found active tournament:', tournament.id)
     return jsonResponse(tournament)
   } catch (error) {
-    console.error('[tournaments/active] Error:', error)
-    return errorResponse('Internal server error', 500)
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    const errorStack = error instanceof Error ? error.stack : undefined
+    console.error('[tournaments/active] Error:', {
+      message: errorMessage,
+      stack: errorStack,
+      error: error,
+      env: {
+        hasNetlifyDbUrl: !!process.env.NETLIFY_DATABASE_URL,
+        hasDatabaseUrl: !!process.env.DATABASE_URL,
+        hasTestDbUrl: !!process.env.TEST_DATABASE_URL,
+      }
+    })
+    return errorResponse(`Internal server error: ${errorMessage}`, 500)
   }
 })
 

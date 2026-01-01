@@ -63,8 +63,19 @@ const handler: Handler = requireAuth(async (event) => {
 
     return errorResponse('Method not allowed', 405)
   } catch (error) {
-    console.error('Error:', error)
-    return errorResponse('Internal server error', 500)
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    const errorStack = error instanceof Error ? error.stack : undefined
+    console.error('[tournaments/index] Error:', {
+      message: errorMessage,
+      stack: errorStack,
+      error: error,
+      env: {
+        hasNetlifyDbUrl: !!process.env.NETLIFY_DATABASE_URL,
+        hasDatabaseUrl: !!process.env.DATABASE_URL,
+        hasTestDbUrl: !!process.env.TEST_DATABASE_URL,
+      }
+    })
+    return errorResponse(`Internal server error: ${errorMessage}`, 500)
   }
 })
 

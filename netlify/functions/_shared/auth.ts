@@ -12,21 +12,54 @@ export function verifyAuth(event: { headers: Record<string, string | undefined> 
 
 export function requireAuth(handler: Handler): Handler {
   return async (event: HandlerEvent, context: HandlerContext): Promise<HandlerResponse> => {
-    const headers: Record<string, string> = {}
-    for (const [key, value] of Object.entries(event.headers)) {
-      if (value !== undefined) {
-        headers[key] = value
+    try {
+      const headers: Record<string, string> = {}
+      for (const [key, value] of Object.entries(event.headers)) {
+        if (value !== undefined) {
+          headers[key] = value
+        }
       }
-    }
 
-    if (!verifyAuth({ headers })) {
+      if (!verifyAuth({ headers })) {
+        return {
+          statusCode: 401,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ error: 'Unauthorized' }),
+        }
+      }
+
+      const result = await handler(event, context)
+
+      if (!result) {
+        console.error('[requireAuth] Handler returned undefined/null result')
+        return {
+          statusCode: 500,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ error: 'Internal server error: Handler returned no response' }),
+        }
+      }
+
+      return result
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      const errorStack = error instanceof Error ? error.stack : undefined
+      console.error('[requireAuth] Unhandled error:', {
+        message: errorMessage,
+        stack: errorStack,
+        error: error,
+      })
       return {
-        statusCode: 401,
-        body: JSON.stringify({ error: 'Unauthorized' }),
+        statusCode: 500,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ error: `Internal server error: ${errorMessage}` }),
       }
     }
-    const result = await handler(event, context)
-    return result || { statusCode: 500, body: JSON.stringify({ error: 'Internal server error' }) }
   }
 }
 
