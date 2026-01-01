@@ -24,7 +24,7 @@ describe('useTournaments', () => {
   it('should fetch tournaments successfully', async () => {
     const mockTournaments = [
       createMockTournament(),
-      createMockTournament({ id: 'tournament-2', name: 'Tournament 2' }),
+      createMockTournament({ id: 'tournament-2', date: '2024-01-02' }),
     ]
     vi.mocked(api.get)
       .mockResolvedValueOnce(mockTournaments)
@@ -58,7 +58,7 @@ describe('useTournaments', () => {
     vi.mocked(api.get)
       .mockResolvedValueOnce([])
       .mockResolvedValueOnce(null)
-    const newTournament = createMockTournament({ id: 'tournament-new', name: 'New Tournament' })
+    const newTournament = createMockTournament({ id: 'tournament-new', date: '2024-01-15' })
     vi.mocked(api.post).mockResolvedValue(newTournament)
 
     const { result } = renderHook(() => useTournaments())
@@ -68,14 +68,14 @@ describe('useTournaments', () => {
     })
 
     await act(async () => {
-      await result.current.createTournament('New Tournament')
+      await result.current.createTournament('2024-01-15')
     })
 
     await waitFor(() => {
       expect(result.current.tournaments).toContainEqual(newTournament)
     })
 
-    expect(api.post).toHaveBeenCalledWith('/tournaments', { name: 'New Tournament' })
+    expect(api.post).toHaveBeenCalledWith('/tournaments', { date: '2024-01-15' })
   })
 
   it('should start tournament successfully', async () => {
@@ -125,7 +125,7 @@ describe('useTournaments', () => {
     })
 
     await act(async () => {
-      await result.current.closeTournament(tournament.id, tournament.name)
+      await result.current.closeTournament(tournament.id, tournament.date)
     })
 
     await waitFor(() => {
@@ -134,7 +134,7 @@ describe('useTournaments', () => {
     })
 
     expect(api.put).toHaveBeenCalledWith(`/tournaments/${tournament.id}/close`, {
-      confirmation: tournament.name,
+      confirmation: tournament.date,
     })
   })
 

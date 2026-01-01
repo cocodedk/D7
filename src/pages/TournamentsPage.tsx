@@ -39,7 +39,11 @@ export default function TournamentsPage() {
       {activeTournament && (
         <div className="card bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800">
           <p className="font-semibold text-green-800 dark:text-green-200">
-            Active: {activeTournament.name}
+            Active: {new Date(activeTournament.date).toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            })}
           </p>
         </div>
       )}
@@ -66,8 +70,8 @@ export default function TournamentsPage() {
 
       {showForm && (
         <TournamentForm
-          onSave={async (name) => {
-            await createTournament(name)
+          onSave={async (date) => {
+            await createTournament(date)
             setShowForm(false)
           }}
           onCancel={() => setShowForm(false)}

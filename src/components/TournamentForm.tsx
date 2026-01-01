@@ -1,25 +1,28 @@
 import { useState, FormEvent } from 'react'
 
 interface TournamentFormProps {
-  onSave: (name: string) => Promise<void>
+  onSave: (date: string) => Promise<void>
   onCancel: () => void
 }
 
 export default function TournamentForm({ onSave, onCancel }: TournamentFormProps) {
-  const [name, setName] = useState('')
+  const [date, setDate] = useState(() => {
+    // Default to today's date in YYYY-MM-DD format
+    return new Date().toISOString().split('T')[0]
+  })
   const [loading, setLoading] = useState(false)
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
-    if (!name.trim()) {
-      alert('Tournament name is required')
+    if (!date) {
+      alert('Tournament date is required')
       return
     }
 
     setLoading(true)
     try {
-      await onSave(name.trim())
-      setName('')
+      await onSave(date)
+      setDate(new Date().toISOString().split('T')[0])
     } catch (error) {
       alert(error instanceof Error ? error.message : 'Failed to create tournament')
     } finally {
@@ -34,16 +37,15 @@ export default function TournamentForm({ onSave, onCancel }: TournamentFormProps
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="tournament-name" className="block text-sm font-medium mb-2">
-              Tournament Name *
+            <label htmlFor="tournament-date" className="block text-sm font-medium mb-2">
+              Tournament Date *
             </label>
             <input
-              id="tournament-name"
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              id="tournament-date"
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
               className="input"
-              placeholder="Enter tournament name"
               required
               autoFocus
             />

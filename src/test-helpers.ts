@@ -17,7 +17,7 @@ export function createMockPlayer(overrides?: Partial<Player>): Player {
 export function createMockTournament(overrides?: Partial<Tournament>): Tournament {
   return {
     id: 'tournament-1',
-    name: 'Test Tournament',
+    date: '2024-01-01',
     state: 'draft',
     started_at: null,
     closed_at: null,

@@ -18,12 +18,12 @@ export default function TournamentCard({
   const [confirmation, setConfirmation] = useState('')
 
   const handleClose = () => {
-    if (confirmation === tournament.name) {
+    if (confirmation === tournament.date) {
       onClose(confirmation)
       setShowCloseModal(false)
       setConfirmation('')
     } else {
-      alert('Tournament name does not match')
+      alert('Tournament date does not match')
     }
   }
 
@@ -32,7 +32,13 @@ export default function TournamentCard({
       <div className={`card ${isActive ? 'border-green-500 dark:border-green-400' : ''}`}>
         <div className="flex justify-between items-start mb-3">
           <div>
-            <h3 className="font-semibold text-lg">{tournament.name}</h3>
+            <h3 className="font-semibold text-lg">
+              {new Date(tournament.date).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              })}
+            </h3>
             <div className="flex gap-2 mt-1">
               <span
                 className={`text-xs px-2 py-1 rounded ${
@@ -83,13 +89,12 @@ export default function TournamentCard({
           <div className="card max-w-md w-full">
             <h2 className="text-xl font-bold mb-4">Close Tournament</h2>
             <p className="text-red-600 dark:text-red-400 mb-4">
-              This action is irreversible. Type the tournament name to confirm.
+              This action is irreversible. Enter the tournament date to confirm.
             </p>
             <input
-              type="text"
+              type="date"
               value={confirmation}
               onChange={(e) => setConfirmation(e.target.value)}
-              placeholder={tournament.name}
               className="input mb-4"
             />
             <div className="flex gap-2">
@@ -104,7 +109,7 @@ export default function TournamentCard({
               </button>
               <button
                 onClick={handleClose}
-                disabled={confirmation !== tournament.name}
+                disabled={confirmation !== tournament.date}
                 className="flex-1 btn btn-danger"
               >
                 Close Tournament

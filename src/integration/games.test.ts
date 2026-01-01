@@ -62,7 +62,7 @@ describe('Games Integration Tests', () => {
     authToken = extractToken(loginResponse) || ''
 
     // Create test data
-    tournamentId = await createTestTournament({ name: 'Test Tournament', state: 'active' })
+    tournamentId = await createTestTournament({ date: '2024-01-15', state: 'active' })
     playerId = await createTestPlayer({ name: 'Test Player', nickname: 'TP' })
 
     // Small delay to ensure data is committed to database

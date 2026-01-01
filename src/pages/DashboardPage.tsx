@@ -39,7 +39,13 @@ export default function DashboardPage() {
       ) : activeTournament ? (
         <div className="card">
           <h2 className="text-lg font-semibold mb-2">Active Tournament</h2>
-          <p className="text-gray-600 dark:text-gray-400 mb-4">{activeTournament.name}</p>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">
+            {new Date(activeTournament.date).toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            })}
+          </p>
           <Link
             to="/game"
             className="btn btn-primary inline-block"

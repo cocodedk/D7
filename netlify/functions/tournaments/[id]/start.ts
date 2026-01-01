@@ -5,7 +5,7 @@ import { query, queryOne } from '../../_shared/db'
 
 interface Tournament {
   id: string
-  name: string
+  date: string
   state: 'draft' | 'active' | 'closed'
   started_at: string | null
   closed_at: string | null
@@ -22,7 +22,7 @@ const handler: Handler = requireAuth(async (event) => {
 
     // Check if tournament exists and is in draft state
     const tournament = await queryOne<Tournament>(
-      "SELECT id, name, state FROM tournaments WHERE id = $1 AND state = 'draft'",
+      "SELECT id, date, state FROM tournaments WHERE id = $1 AND state = 'draft'",
       [id]
     )
 
@@ -44,7 +44,7 @@ const handler: Handler = requireAuth(async (event) => {
       `UPDATE tournaments
        SET state = 'active', started_at = NOW()
        WHERE id = $1
-       RETURNING id, name, state, started_at, closed_at, created_at`,
+       RETURNING id, TO_CHAR(date, 'YYYY-MM-DD') as date, state, started_at, closed_at, created_at`,
       [id]
     )
 

@@ -89,7 +89,13 @@ export default function GamePage() {
       </div>
 
       <div className="card">
-        <h2 className="font-semibold mb-2">{activeTournament.name}</h2>
+        <h2 className="font-semibold mb-2">
+          {new Date(activeTournament.date).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          })}
+        </h2>
         <p className="text-sm text-gray-600 dark:text-gray-400">
           Tap I or X for each player
         </p>

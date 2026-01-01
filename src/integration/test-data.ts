@@ -11,7 +11,7 @@ export interface TestPlayer {
 
 export interface TestTournament {
   id: string
-  name: string
+  date: string
   state: 'draft' | 'active' | 'closed'
   started_at: Date | null
   closed_at: Date | null
@@ -59,15 +59,15 @@ export async function createTestTournament(
 ): Promise<string> {
   const pool = getTestDbPool()
   const {
-    name = 'Test Tournament',
+    date = new Date().toISOString().split('T')[0],
     state = 'draft',
     started_at = null,
     closed_at = null,
   } = overrides
 
   const result = await pool.query<{ id: string }>(
-    'INSERT INTO tournaments (name, state, started_at, closed_at) VALUES ($1, $2, $3, $4) RETURNING id',
-    [name, state, started_at, closed_at]
+    'INSERT INTO tournaments (date, state, started_at, closed_at) VALUES ($1, $2, $3, $4) RETURNING id',
+    [date, state, started_at, closed_at]
   )
 
   return result.rows[0].id

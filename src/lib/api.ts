@@ -19,19 +19,11 @@ async function request<T>(
   }
 
   const url = `${API_BASE}${endpoint}`;
-  const bodyStr = options.body ? (typeof options.body === 'string' ? options.body : String(options.body)) : null;
-  // #region agent log
-  fetch('http://127.0.0.1:7245/ingest/2e161807-a777-4f0a-9e48-5c755a702a4a',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api.ts:21',message:'Request sending',data:{url,method:options.method||'GET',hasBody:!!bodyStr,bodyLength:bodyStr?.length,apiBase:API_BASE},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'C'})}).catch(()=>{});
-  // #endregion
 
   const response = await fetch(url, {
     ...options,
     headers,
   })
-
-  // #region agent log
-  fetch('http://127.0.0.1:7245/ingest/2e161807-a777-4f0a-9e48-5c755a702a4a',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api.ts:28',message:'Response received',data:{status:response.status,statusText:response.statusText,ok:response.ok,contentType:response.headers.get('content-type')},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'C'})}).catch(()=>{});
-  // #endregion
 
   if (!response.ok) {
     if (response.status === 401) {
@@ -39,16 +31,10 @@ async function request<T>(
       window.location.href = '/login'
     }
     const error = await response.json().catch(() => ({ message: 'Request failed' }))
-    // #region agent log
-    fetch('http://127.0.0.1:7245/ingest/2e161807-a777-4f0a-9e48-5c755a702a4a',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api.ts:35',message:'Error response',data:{status:response.status,errorMessage:error.message,errorKeys:Object.keys(error).join(',')},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'E'})}).catch(()=>{});
-    // #endregion
     throw new Error(error.message || `HTTP ${response.status}`)
   }
 
   const jsonData = await response.json();
-  // #region agent log
-  fetch('http://127.0.0.1:7245/ingest/2e161807-a777-4f0a-9e48-5c755a702a4a',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api.ts:42',message:'Response parsed',data:{hasData:!!jsonData,dataKeys:Object.keys(jsonData).join(',')},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'E'})}).catch(()=>{});
-  // #endregion
   return jsonData;
 }
 

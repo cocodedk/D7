@@ -75,8 +75,8 @@ describe('Tournaments Integration Tests', () => {
     })
 
     it('should return list of tournaments', async () => {
-      await createTestTournament({ name: 'Tournament 1', state: 'draft' })
-      await createTestTournament({ name: 'Tournament 2', state: 'active' })
+      await createTestTournament({ date: '2024-01-01', state: 'draft' })
+      await createTestTournament({ date: '2024-01-02', state: 'active' })
 
       const response = await invokeFunction(tournamentsHandler, {
         httpMethod: 'GET',
@@ -104,18 +104,18 @@ describe('Tournaments Integration Tests', () => {
       const response = await invokeFunction(tournamentsHandler, {
         httpMethod: 'POST',
         path: '/api/tournaments',
-        body: { name: 'New Tournament' },
+        body: { date: '2024-01-15' },
         headers: createAuthHeaders(authToken),
       })
 
       assertSuccess(response)
       expect(response.statusCode).toBe(201)
       expect(response.body).toHaveProperty('id')
-      expect(response.body).toHaveProperty('name', 'New Tournament')
+      expect(response.body).toHaveProperty('date', '2024-01-15')
       expect(response.body).toHaveProperty('state', 'draft')
     })
 
-    it('should return 400 when name is missing', async () => {
+    it('should return 400 when date is missing', async () => {
       const response = await invokeFunction(tournamentsHandler, {
         httpMethod: 'POST',
         path: '/api/tournaments',
@@ -127,11 +127,27 @@ describe('Tournaments Integration Tests', () => {
       expect(response.body).toHaveProperty('error')
     })
 
+    it('should return 409 when tournament with same date already exists', async () => {
+      const date = '2024-01-15'
+      await createTestTournament({ date, state: 'draft' })
+
+      const response = await invokeFunction(tournamentsHandler, {
+        httpMethod: 'POST',
+        path: '/api/tournaments',
+        body: { date },
+        headers: createAuthHeaders(authToken),
+      })
+
+      assertError(response, 409)
+      expect(response.body).toHaveProperty('error')
+      expect((response.body as { error?: string }).error).toContain('already exists')
+    })
+
     it('should require authentication', async () => {
       const response = await invokeFunction(tournamentsHandler, {
         httpMethod: 'POST',
         path: '/api/tournaments',
-        body: { name: 'New Tournament' },
+        body: { date: '2024-01-15' },
       })
 
       assertError(response, 401)
@@ -151,7 +167,7 @@ describe('Tournaments Integration Tests', () => {
     })
 
     it('should return active tournament', async () => {
-      const tournamentId = await createTestTournament({ name: 'Active Tournament', state: 'active' })
+      const tournamentId = await createTestTournament({ date: '2024-01-15', state: 'active' })
 
       // Small delay to ensure tournament is committed
       await new Promise(resolve => setTimeout(resolve, 50))
@@ -184,7 +200,7 @@ describe('Tournaments Integration Tests', () => {
       await pool.query("UPDATE tournaments SET state = 'draft' WHERE state = 'active'")
 
       const tournamentId = await createTestTournament({
-        name: 'Draft Tournament',
+        date: '2024-01-15',
         state: 'draft',
       })
 
@@ -203,9 +219,9 @@ describe('Tournaments Integration Tests', () => {
     })
 
     it('should return 400 if another tournament is active', async () => {
-      const activeId = await createTestTournament({ name: 'Active Tournament', state: 'active' })
+      const activeId = await createTestTournament({ date: '2024-01-15', state: 'active' })
       const draftId = await createTestTournament({
-        name: 'Draft Tournament',
+        date: '2024-01-16',
         state: 'draft',
       })
 
@@ -246,8 +262,9 @@ describe('Tournaments Integration Tests', () => {
 
   describe('PUT /api/tournaments/:id/close', () => {
     it('should close an active tournament', async () => {
+      const tournamentDate = '2024-01-15'
       const tournamentId = await createTestTournament({
-        name: 'Active Tournament',
+        date: tournamentDate,
         state: 'active',
       })
 
@@ -257,7 +274,7 @@ describe('Tournaments Integration Tests', () => {
       const response = await invokeFunction(closeHandler, {
         httpMethod: 'PUT',
         path: `/api/tournaments/${tournamentId}/close`,
-        body: { confirmation: 'Active Tournament' },
+        body: { confirmation: tournamentDate },
         headers: createAuthHeaders(authToken),
       })
 
@@ -266,9 +283,9 @@ describe('Tournaments Integration Tests', () => {
       expect((response.body as { closed_at?: string }).closed_at).not.toBeNull()
     })
 
-    it('should return 400 if confirmation name does not match', async () => {
+    it('should return 400 if confirmation date does not match', async () => {
       const tournamentId = await createTestTournament({
-        name: 'Active Tournament',
+        date: '2024-01-15',
         state: 'active',
       })
 
@@ -278,7 +295,7 @@ describe('Tournaments Integration Tests', () => {
       const response = await invokeFunction(closeHandler, {
         httpMethod: 'PUT',
         path: `/api/tournaments/${tournamentId}/close`,
-        body: { confirmation: 'Wrong Name' },
+        body: { confirmation: '2024-01-16' },
         headers: createAuthHeaders(authToken),
       })
 
@@ -302,7 +319,7 @@ describe('Tournaments Integration Tests', () => {
       const response = await invokeFunction(closeHandler, {
         httpMethod: 'PUT',
         path: `/api/tournaments/${tournamentId}/close`,
-        body: { confirmation: 'Test' },
+        body: { confirmation: '2024-01-15' },
       })
 
       assertError(response, 401)

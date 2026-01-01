@@ -5,7 +5,7 @@ import { queryOne } from '../../_shared/db'
 
 interface Tournament {
   id: string
-  name: string
+  date: string
   state: 'draft' | 'active' | 'closed'
   started_at: string | null
   closed_at: string | null
@@ -22,13 +22,13 @@ const handler: Handler = requireAuth(async (event) => {
 
     // Debug: Check if tournament exists at all (regardless of state)
     const anyTournament = await queryOne<Tournament>(
-      'SELECT id, name, state FROM tournaments WHERE id = $1',
+      'SELECT id, TO_CHAR(date, \'YYYY-MM-DD\') as date, state FROM tournaments WHERE id = $1',
       [id]
     )
 
-    // Get tournament to verify name
+    // Get tournament to verify date
     const tournament = await queryOne<Tournament>(
-      "SELECT id, name, state FROM tournaments WHERE id = $1 AND state = 'active'",
+      "SELECT id, TO_CHAR(date, 'YYYY-MM-DD') as date, state FROM tournaments WHERE id = $1 AND state = 'active'",
       [id]
     )
 
@@ -46,8 +46,8 @@ const handler: Handler = requireAuth(async (event) => {
     // Parse confirmation body
     const body = await parseBody<{ confirmation: string }>(event)
 
-    if (body.confirmation !== tournament.name) {
-      return errorResponse('Tournament name confirmation does not match', 400)
+    if (body.confirmation !== tournament.date) {
+      return errorResponse('Tournament date confirmation does not match', 400)
     }
 
     // Close the tournament
@@ -55,7 +55,7 @@ const handler: Handler = requireAuth(async (event) => {
       `UPDATE tournaments
        SET state = 'closed', closed_at = NOW()
        WHERE id = $1
-       RETURNING id, name, state, started_at, closed_at, created_at`,
+       RETURNING id, TO_CHAR(date, 'YYYY-MM-DD') as date, state, started_at, closed_at, created_at`,
       [id]
     )
 

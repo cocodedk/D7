@@ -74,7 +74,13 @@ export default function ConfirmationScreen({
 
       <div className="card">
         <h2 className="font-semibold mb-2">Tournament</h2>
-        <p>{tournament.name}</p>
+        <p>
+          {new Date(tournament.date).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          })}
+        </p>
       </div>
 
       <div className="card">

@@ -3,7 +3,7 @@ import { api } from '../lib/api'
 
 export interface Tournament {
   id: string
-  name: string
+  date: string
   state: 'draft' | 'active' | 'closed'
   started_at: string | null
   closed_at: string | null
@@ -32,8 +32,28 @@ export function useTournaments() {
   const fetchActiveTournament = async () => {
     try {
       const data = await api.get<Tournament | null>('/tournaments/active')
-      setActiveTournament(data)
+
+      // Debug logging to understand the actual response format
+      console.log('[fetchActiveTournament] Response:', {
+        data,
+        type: typeof data,
+        isArray: Array.isArray(data),
+        isNull: data === null,
+        truthy: !!data,
+      })
+
+      // Normalize response: if it's an array (empty or not), treat it as null
+      // This handles cases where the API incorrectly returns [] instead of null
+      const normalizedData = Array.isArray(data) ? null : data
+
+      // Additional type safety: ensure we only set Tournament objects or null
+      if (normalizedData !== null && typeof normalizedData === 'object' && 'id' in normalizedData && 'state' in normalizedData) {
+        setActiveTournament(normalizedData as Tournament)
+      } else {
+        setActiveTournament(null)
+      }
     } catch (err) {
+      console.error('[fetchActiveTournament] Error:', err)
       setActiveTournament(null)
     }
   }
@@ -43,8 +63,8 @@ export function useTournaments() {
     fetchActiveTournament()
   }, [])
 
-  const createTournament = async (name: string) => {
-    const newTournament = await api.post<Tournament>('/tournaments', { name })
+  const createTournament = async (date: string) => {
+    const newTournament = await api.post<Tournament>('/tournaments', { date })
     setTournaments((prev) => [newTournament, ...prev])
     return newTournament
   }

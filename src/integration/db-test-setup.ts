@@ -37,22 +37,35 @@ export function getTestDbPool(): Pool {
  */
 export async function setupTestDatabase(): Promise<void> {
   const pool = getTestDbPool()
-  const migrationPath = join(
-    process.cwd(),
-    'netlify',
-    'migrations',
-    '001_initial_schema.sql'
-  )
 
-  try {
-    const migrationSQL = readFileSync(migrationPath, 'utf-8')
-    await pool.query(migrationSQL)
-  } catch (error) {
-    // If tables already exist, that's okay
-    if (error instanceof Error && error.message.includes('already exists')) {
-      return
+  // Run migrations in order
+  const migrations = [
+    '001_initial_schema.sql',
+    '002_replace_tournament_name_with_date.sql',
+  ]
+
+  for (const migrationFile of migrations) {
+    const migrationPath = join(
+      process.cwd(),
+      'netlify',
+      'migrations',
+      migrationFile
+    )
+
+    try {
+      const migrationSQL = readFileSync(migrationPath, 'utf-8')
+      await pool.query(migrationSQL)
+    } catch (error) {
+      // If tables/constraints already exist, that's okay
+      if (error instanceof Error && (
+        error.message.includes('already exists') ||
+        error.message.includes('duplicate key') ||
+        error.message.includes('constraint')
+      )) {
+        continue
+      }
+      throw error
     }
-    throw error
   }
 }
 
