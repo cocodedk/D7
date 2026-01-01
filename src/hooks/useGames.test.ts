@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { renderHook, waitFor } from '@testing-library/react'
+import { renderHook, waitFor, act } from '@testing-library/react'
 import { useGames } from './useGames'
 import { api } from '../lib/api'
 import { createMockGame } from '../test-helpers'
@@ -24,9 +24,12 @@ describe('useGames', () => {
 
     const { result } = renderHook(() => useGames())
 
-    const game = await result.current.createGame({
-      tournamentId: 'tournament-1',
-      events: [{ playerId: 'player-1', type: 'I' }],
+    let game
+    await act(async () => {
+      game = await result.current.createGame({
+        tournamentId: 'tournament-1',
+        events: [{ playerId: 'player-1', type: 'I' }],
+      })
     })
 
     expect(game).toEqual(mockGame)
@@ -41,12 +44,14 @@ describe('useGames', () => {
 
     const { result } = renderHook(() => useGames())
 
-    await expect(
-      result.current.createGame({
-        tournamentId: 'tournament-1',
-        events: [{ playerId: 'player-1', type: 'I' }],
-      })
-    ).rejects.toThrow('Create failed')
+    await act(async () => {
+      await expect(
+        result.current.createGame({
+          tournamentId: 'tournament-1',
+          events: [{ playerId: 'player-1', type: 'I' }],
+        })
+      ).rejects.toThrow('Create failed')
+    })
 
     await waitFor(() => {
       expect(result.current.error).toBe('Create failed')
@@ -59,7 +64,10 @@ describe('useGames', () => {
 
     const { result } = renderHook(() => useGames())
 
-    const game = await result.current.getGame('game-1')
+    let game
+    await act(async () => {
+      game = await result.current.getGame('game-1')
+    })
 
     expect(game).toEqual(mockGame)
     expect(api.get).toHaveBeenCalledWith('/games/game-1')
@@ -70,7 +78,9 @@ describe('useGames', () => {
 
     const { result } = renderHook(() => useGames())
 
-    await expect(result.current.getGame('game-1')).rejects.toThrow('Not found')
+    await act(async () => {
+      await expect(result.current.getGame('game-1')).rejects.toThrow('Not found')
+    })
 
     await waitFor(() => {
       expect(result.current.error).toBe('Not found')
@@ -82,7 +92,9 @@ describe('useGames', () => {
 
     const { result } = renderHook(() => useGames())
 
-    await result.current.deleteGame('game-1')
+    await act(async () => {
+      await result.current.deleteGame('game-1')
+    })
 
     expect(api.delete).toHaveBeenCalledWith('/games/game-1')
   })
@@ -92,7 +104,9 @@ describe('useGames', () => {
 
     const { result } = renderHook(() => useGames())
 
-    await expect(result.current.deleteGame('game-1')).rejects.toThrow('Delete failed')
+    await act(async () => {
+      await expect(result.current.deleteGame('game-1')).rejects.toThrow('Delete failed')
+    })
 
     await waitFor(() => {
       expect(result.current.error).toBe('Delete failed')

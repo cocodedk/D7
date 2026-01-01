@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { invokeFunction } from './function-invoker'
-import { createAuthHeaders, extractToken, assertSuccess, assertError } from './test-helpers'
+import { createAuthHeaders, extractToken, assertSuccess, assertError, getTestAdminPassword } from './test-helpers'
 import { resetTestDatabase } from './db-test-setup'
 import { createTestPlayer, cleanupTestData } from './test-data'
 import { handler as playersHandler } from '../../netlify/functions/players/index'
@@ -42,7 +42,7 @@ describe('Players Integration Tests', () => {
     await resetTestDatabase()
 
     // Get auth token for protected endpoints
-    const adminPassword = process.env.ADMIN_PASSWORD || 'getTestAdminPassword()'
+    const adminPassword = getTestAdminPassword()
       const loginResponse = await invokeFunction(
       (await import('../../netlify/functions/auth-login')).handler,
       {

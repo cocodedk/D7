@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { invokeFunction } from './function-invoker'
-import { createAuthHeaders, extractToken, assertSuccess, assertError } from './test-helpers'
+import { createAuthHeaders, extractToken, assertSuccess, assertError, getTestAdminPassword } from './test-helpers'
 import { resetTestDatabase } from './db-test-setup'
 import { handler as loginHandler } from '../../netlify/functions/auth-login'
 import { handler as logoutHandler } from '../../netlify/functions/auth-logout'
@@ -30,7 +30,7 @@ describe('Authentication Integration Tests', () => {
 
   describe('POST /api/auth-login', () => {
     it('should login with correct password and return token', async () => {
-      const adminPassword = process.env.ADMIN_PASSWORD || 'getTestAdminPassword()'
+      const adminPassword = getTestAdminPassword()
 
       const response = await invokeFunction(loginHandler, {
         httpMethod: 'POST',
@@ -80,7 +80,7 @@ describe('Authentication Integration Tests', () => {
     })
 
     it('should generate valid base64 token', async () => {
-      const adminPassword = process.env.ADMIN_PASSWORD || 'getTestAdminPassword()'
+      const adminPassword = getTestAdminPassword()
 
       const response = await invokeFunction(loginHandler, {
         httpMethod: 'POST',
@@ -99,7 +99,7 @@ describe('Authentication Integration Tests', () => {
     })
 
     it('should return different tokens for multiple logins', async () => {
-      const adminPassword = process.env.ADMIN_PASSWORD || 'getTestAdminPassword()'
+      const adminPassword = getTestAdminPassword()
 
       const response1 = await invokeFunction(loginHandler, {
         httpMethod: 'POST',

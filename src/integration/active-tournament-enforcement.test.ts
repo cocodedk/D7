@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { invokeFunction } from './function-invoker'
-import { createAuthHeaders, extractToken, assertSuccess, assertError } from './test-helpers'
+import { createAuthHeaders, extractToken, assertSuccess, assertError, getTestAdminPassword } from './test-helpers'
 import { resetTestDatabase } from './db-test-setup'
 import {
   createTestPlayer,
@@ -37,7 +37,7 @@ describe('Active Tournament Enforcement E2E Tests', () => {
 
     await resetTestDatabase()
 
-    const adminPassword = process.env.ADMIN_PASSWORD || 'getTestAdminPassword()'
+    const adminPassword = getTestAdminPassword()
     const loginResponse = await invokeFunction(
       (await import('../../netlify/functions/auth-login')).handler,
       {

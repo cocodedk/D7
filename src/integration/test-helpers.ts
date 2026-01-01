@@ -1,4 +1,16 @@
 /**
+ * Get admin password for tests. Requires ADMIN_PASSWORD env var to be set.
+ * Throws error if not set to prevent accidental use of wrong password.
+ */
+export function getTestAdminPassword(): string {
+  const password = process.env.ADMIN_PASSWORD
+  if (!password) {
+    throw new Error('ADMIN_PASSWORD environment variable must be set for tests')
+  }
+  return password
+}
+
+/**
  * Create Authorization header with Bearer token
  */
 export function createAuthHeaders(token: string): Record<string, string> {

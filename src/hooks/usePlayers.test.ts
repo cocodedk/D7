@@ -11,14 +11,20 @@ describe('usePlayers', () => {
     vi.clearAllMocks()
   })
 
-  it('should have initial loading state', () => {
+  it('should have initial loading state', async () => {
     vi.mocked(api.get).mockResolvedValue([])
 
     const { result } = renderHook(() => usePlayers())
 
+    // Check initial state synchronously
     expect(result.current.loading).toBe(true)
     expect(result.current.players).toEqual([])
     expect(result.current.error).toBeNull()
+
+    // Wait for the async operation to complete to avoid warnings
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false)
+    })
   })
 
   it('should fetch players successfully', async () => {
@@ -86,12 +92,14 @@ describe('usePlayers', () => {
       expect(result.current.loading).toBe(false)
     })
 
-    await expect(
-      result.current.createPlayer({
-        name: 'New Player',
-        nickname: 'Newbie',
-      })
-    ).rejects.toThrow('Create failed')
+    await act(async () => {
+      await expect(
+        result.current.createPlayer({
+          name: 'New Player',
+          nickname: 'Newbie',
+        })
+      ).rejects.toThrow('Create failed')
+    })
   })
 
   it('should update player successfully', async () => {
@@ -128,9 +136,11 @@ describe('usePlayers', () => {
       expect(result.current.loading).toBe(false)
     })
 
-    await expect(
-      result.current.updatePlayer(player.id, { name: 'Updated Name' })
-    ).rejects.toThrow('Update failed')
+    await act(async () => {
+      await expect(
+        result.current.updatePlayer(player.id, { name: 'Updated Name' })
+      ).rejects.toThrow('Update failed')
+    })
   })
 
   it('should delete player successfully', async () => {
@@ -166,7 +176,9 @@ describe('usePlayers', () => {
       expect(result.current.loading).toBe(false)
     })
 
-    await expect(result.current.deletePlayer(player.id)).rejects.toThrow('Delete failed')
+    await act(async () => {
+      await expect(result.current.deletePlayer(player.id)).rejects.toThrow('Delete failed')
+    })
   })
 
   it('should refresh players', async () => {
@@ -185,7 +197,9 @@ describe('usePlayers', () => {
 
     expect(result.current.players).toEqual(initialPlayers)
 
-    await result.current.refresh()
+    await act(async () => {
+      await result.current.refresh()
+    })
 
     await waitFor(() => {
       expect(result.current.players).toEqual(refreshedPlayers)
