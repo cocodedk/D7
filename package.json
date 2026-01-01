@@ -15,6 +15,7 @@
     "test:integration:watch": "vitest src/integration",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
+    "test:db": "node scripts/test-db-connection.js",
     "postinstall": "node scripts/fix-http-proxy.cjs"
   },
   "dependencies": {
