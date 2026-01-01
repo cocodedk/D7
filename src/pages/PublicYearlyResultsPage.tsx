@@ -1,6 +1,10 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { api } from '../lib/api'
+import PublicLayout from '../components/public/PublicLayout'
+import PublicHero from '../components/public/PublicHero'
+import PlayerLeaderboardCard from '../components/public/PlayerLeaderboardCard'
+import '../styles/public.css'
 
 interface YearlyResults {
   year: number
@@ -49,121 +53,74 @@ export default function PublicYearlyResultsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-xl font-semibold mb-2">Loading results...</div>
+      <PublicLayout showBackButton backTo="/public">
+        <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: '1.5rem', fontWeight: 600, marginBottom: '1rem' }}>Loading results...</div>
+          </div>
         </div>
-      </div>
+      </PublicLayout>
     )
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-xl font-semibold mb-2 text-red-600 dark:text-red-400">Error</div>
-          <div className="text-gray-600 dark:text-gray-400">{error}</div>
+      <PublicLayout showBackButton backTo="/public">
+        <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: '1.5rem', fontWeight: 600, marginBottom: '1rem', color: 'var(--card-red)' }}>
+              Error
+            </div>
+            <div style={{ color: 'var(--text-light)' }}>{error}</div>
+          </div>
         </div>
-      </div>
+      </PublicLayout>
     )
   }
 
   if (!results) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-xl font-semibold mb-2">No results found</div>
+      <PublicLayout showBackButton backTo="/public">
+        <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: '1.5rem', fontWeight: 600, marginBottom: '1rem' }}>No results found</div>
+          </div>
         </div>
-      </div>
+      </PublicLayout>
     )
   }
 
   const sortedScores = [...results.scores].sort((a, b) => b.netScore - a.netScore)
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-8">
-      <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
-        <div className="max-w-7xl mx-auto px-4 py-3">
-          <h1 className="text-xl font-bold">Yearly Results - {results.year}</h1>
+    <PublicLayout showBackButton backTo="/public" backLabel="← Back to Results">
+      <PublicHero title={results.year.toString()} subtitle="Yearly Results" tagline="Season aggregate scores" />
+      <section className="public-section" style={{ background: 'var(--white)' }}>
+        <div className="public-container">
+          {sortedScores.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-light)' }}>
+              No results available for {results.year}
+            </div>
+          ) : (
+            <div className="leaderboard-grid">
+              {sortedScores.map((score, index) => (
+                <PlayerLeaderboardCard
+                  key={score.playerId}
+                  player={score.player}
+                  score={{
+                    plusRemainder: score.plusRemainder,
+                    minusRemainder: score.minusRemainder,
+                    plusClusters: score.plusClusters,
+                    minusClusters: score.minusClusters,
+                    netScore: score.netScore,
+                  }}
+                  rank={index + 1}
+                />
+              ))}
+            </div>
+          )}
         </div>
-      </header>
-      <main className="max-w-7xl mx-auto p-4">
-        <div className="card overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-gray-200 dark:border-gray-700">
-                <th className="text-left py-2 px-4">Player</th>
-                <th className="text-right py-2 px-4">+ Clusters</th>
-                <th className="text-right py-2 px-4">- Clusters</th>
-                <th className="text-right py-2 px-4">+ Remainder</th>
-                <th className="text-right py-2 px-4">- Remainder</th>
-                <th className="text-right py-2 px-4 font-bold">Net Score</th>
-              </tr>
-            </thead>
-            <tbody>
-              {sortedScores.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="text-center py-8 text-gray-600 dark:text-gray-400">
-                    No results yet
-                  </td>
-                </tr>
-              ) : (
-                sortedScores.map((score) => (
-                  <tr
-                    key={score.playerId}
-                    className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
-                  >
-                    <td className="py-3 px-4">
-                      {score.player ? (
-                        <div className="flex items-center gap-2">
-                          {score.player.avatar && (
-                            <img
-                              src={`data:image/jpeg;base64,${score.player.avatar}`}
-                              alt={score.player.nickname}
-                              className="w-8 h-8 rounded-full object-cover"
-                            />
-                          )}
-                          <div>
-                            <div className="font-medium">{score.player.nickname}</div>
-                            <div className="text-xs text-gray-600 dark:text-gray-400">
-                              {score.player.name}
-                            </div>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="text-gray-600 dark:text-gray-400">Unknown Player</div>
-                      )}
-                    </td>
-                    <td className="text-right py-3 px-4 text-green-600 dark:text-green-400">
-                      {score.plusClusters}
-                    </td>
-                    <td className="text-right py-3 px-4 text-red-600 dark:text-red-400">
-                      {score.minusClusters}
-                    </td>
-                    <td className="text-right py-3 px-4 text-gray-600 dark:text-gray-400">
-                      {score.plusRemainder}
-                    </td>
-                    <td className="text-right py-3 px-4 text-gray-600 dark:text-gray-400">
-                      {score.minusRemainder}
-                    </td>
-                    <td className="text-right py-3 px-4 font-bold">
-                      {score.netScore > 0 ? (
-                        <span className="text-green-600 dark:text-green-400">
-                          +{score.netScore}
-                        </span>
-                      ) : score.netScore < 0 ? (
-                        <span className="text-red-600 dark:text-red-400">{score.netScore}</span>
-                      ) : (
-                        <span className="text-gray-600 dark:text-gray-400">0</span>
-                      )}
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </main>
-    </div>
+      </section>
+    </PublicLayout>
   )
 }

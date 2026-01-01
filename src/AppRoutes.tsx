@@ -7,6 +7,7 @@ import TournamentsPage from './pages/TournamentsPage'
 import GamePage from './pages/GamePage'
 import ResultsPage from './pages/ResultsPage'
 import SettingsPage from './pages/SettingsPage'
+import PublicLandingPage from './pages/PublicLandingPage'
 import PublicResultsPage from './pages/PublicResultsPage'
 import PublicYearlyResultsPage from './pages/PublicYearlyResultsPage'
 import PublicGamePage from './pages/PublicGamePage'
@@ -21,6 +22,7 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/public" element={<PublicLandingPage />} />
       <Route path="/public/results/:tournamentId" element={<PublicResultsPage />} />
       <Route path="/public/results/yearly/:year" element={<PublicYearlyResultsPage />} />
       <Route path="/public/games/:id" element={<PublicGamePage />} />

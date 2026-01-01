@@ -1,5 +1,5 @@
 import { useState, FormEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 
 export default function LoginPage() {
@@ -57,6 +57,14 @@ export default function LoginPage() {
               {loading ? 'Logging in...' : 'Login'}
             </button>
           </form>
+          <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700 text-center">
+            <Link
+              to="/public"
+              className="text-primary-light dark:text-primary-dark hover:underline text-sm font-medium"
+            >
+              View Public Results →
+            </Link>
+          </div>
         </div>
       </div>
     </div>

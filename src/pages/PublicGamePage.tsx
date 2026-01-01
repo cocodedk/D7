@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { api } from '../lib/api'
+import PublicLayout from '../components/public/PublicLayout'
+import PublicHero from '../components/public/PublicHero'
+import '../styles/public.css'
 
 interface Game {
   id: string
@@ -27,6 +30,7 @@ export default function PublicGamePage() {
   const [game, setGame] = useState<Game | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [tournamentDate, setTournamentDate] = useState<string | null>(null)
 
   useEffect(() => {
     if (id) {
@@ -40,6 +44,17 @@ export default function PublicGamePage() {
     try {
       const data = await api.public.get<Game>(`/games/${gameId}`)
       setGame(data)
+
+      // Try to get tournament date for back navigation
+      try {
+        const tournaments = await api.public.get<Array<{ id: string; date: string }>>('/public-tournaments')
+        const tournament = tournaments.find((t) => t.id === data.tournament_id)
+        if (tournament) {
+          setTournamentDate(tournament.date)
+        }
+      } catch {
+        // Ignore if we can't get the date
+      }
     } catch (err) {
       console.error('Failed to load game:', err)
       setError(err instanceof Error ? err.message : 'Failed to load game')
@@ -51,32 +66,40 @@ export default function PublicGamePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-xl font-semibold mb-2">Loading game...</div>
+      <PublicLayout showBackButton backTo="/public">
+        <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: '1.5rem', fontWeight: 600, marginBottom: '1rem' }}>Loading game...</div>
+          </div>
         </div>
-      </div>
+      </PublicLayout>
     )
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-xl font-semibold mb-2 text-red-600 dark:text-red-400">Error</div>
-          <div className="text-gray-600 dark:text-gray-400">{error}</div>
+      <PublicLayout showBackButton backTo="/public">
+        <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: '1.5rem', fontWeight: 600, marginBottom: '1rem', color: 'var(--card-red)' }}>
+              Error
+            </div>
+            <div style={{ color: 'var(--text-light)' }}>{error}</div>
+          </div>
         </div>
-      </div>
+      </PublicLayout>
     )
   }
 
   if (!game) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-xl font-semibold mb-2">Game not found</div>
+      <PublicLayout showBackButton backTo="/public">
+        <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: '1.5rem', fontWeight: 600, marginBottom: '1rem' }}>Game not found</div>
+          </div>
         </div>
-      </div>
+      </PublicLayout>
     )
   }
 
@@ -94,102 +117,123 @@ export default function PublicGamePage() {
     >
   )
 
-  return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-8">
-      <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
-        <div className="max-w-7xl mx-auto px-4 py-3">
-          <h1 className="text-xl font-bold">Game Details</h1>
-        </div>
-      </header>
-      <main className="max-w-7xl mx-auto p-4 space-y-4">
-        <div className="card">
-          <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-            {new Date(game.created_at).toLocaleString()}
-          </div>
-          {game.comment && (
-            <div className="mb-2">
-              <div className="text-sm font-semibold mb-1">Comment:</div>
-              <div className="text-gray-700 dark:text-gray-300">{game.comment}</div>
-            </div>
-          )}
-          {game.photo && (
-            <div className="mt-4">
-              <img
-                src={`data:image/jpeg;base64,${game.photo}`}
-                alt="Game photo"
-                className="max-w-full h-auto rounded-lg"
-              />
-            </div>
-          )}
-        </div>
+  const gameDate = new Date(game.created_at).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
 
-        <div className="card">
-          <h2 className="text-lg font-semibold mb-4">Score Events</h2>
-          <div className="space-y-3">
-            {Object.entries(eventCounts).map(([playerId, counts]) => (
-              <div key={playerId} className="border-b border-gray-200 dark:border-gray-700 pb-3">
-                {counts.player ? (
-                  <div className="flex items-center gap-3 mb-2">
-                    {counts.player.avatar && (
-                      <img
-                        src={`data:image/jpeg;base64,${counts.player.avatar}`}
-                        alt={counts.player.nickname}
-                        className="w-10 h-10 rounded-full object-cover"
-                      />
-                    )}
-                    <div>
-                      <div className="font-semibold">{counts.player.nickname}</div>
-                      <div className="text-sm text-gray-600 dark:text-gray-400">
-                        {counts.player.name}
+  const backTo = tournamentDate ? `/public/results/${game.tournament_id}` : '/public'
+
+  return (
+    <PublicLayout showBackButton backTo={backTo} backLabel="← Back to Tournament">
+      <PublicHero title="Game Details" subtitle={gameDate} />
+      <section className="public-section" style={{ background: 'var(--white)' }}>
+        <div className="public-container">
+          <div className="game-details-card">
+            {game.comment && (
+              <div style={{ marginBottom: '1.5rem' }}>
+                <div style={{ fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--felt-green)' }}>
+                  Comment:
+                </div>
+                <div style={{ color: 'var(--text-dark)', lineHeight: '1.6' }}>{game.comment}</div>
+              </div>
+            )}
+            {game.photo && (
+              <div style={{ marginTop: '1rem' }}>
+                <img
+                  src={`data:image/jpeg;base64,${game.photo}`}
+                  alt="Game photo"
+                  className="game-photo"
+                />
+              </div>
+            )}
+          </div>
+
+          <div className="game-details-card">
+            <h2 style={{ fontFamily: "'Bangers', cursive", fontSize: '1.75rem', color: 'var(--felt-green)', marginBottom: '1.5rem', letterSpacing: '0.05em' }}>
+              Score Events
+            </h2>
+            <div style={{ display: 'grid', gap: '1.5rem' }}>
+              {Object.entries(eventCounts).map(([playerId, counts]) => (
+                <div
+                  key={playerId}
+                  style={{
+                    padding: '1.5rem',
+                    background: 'var(--cream)',
+                    borderRadius: '10px',
+                    border: '2px solid var(--felt-green)',
+                  }}
+                >
+                  {counts.player ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+                      {counts.player.avatar && (
+                        <img
+                          src={`data:image/jpeg;base64,${counts.player.avatar}`}
+                          alt={counts.player.nickname}
+                          style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover', border: '3px solid var(--felt-green)' }}
+                        />
+                      )}
+                      <div>
+                        <div style={{ fontFamily: "'Bangers', cursive", fontSize: '1.5rem', color: 'var(--felt-green)', letterSpacing: '0.05em' }}>
+                          {counts.player.nickname}
+                        </div>
+                        <div style={{ fontSize: '0.875rem', color: 'var(--text-light)' }}>
+                          {counts.player.name}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ) : (
-                  <div className="font-semibold mb-2">Unknown Player</div>
-                )}
-                <div className="flex gap-4 text-sm">
-                  <div className="text-green-600 dark:text-green-400">
-                    I: {counts.I}
-                  </div>
-                  <div className="text-red-600 dark:text-red-400">
-                    X: {counts.X}
+                  ) : (
+                    <div style={{ fontFamily: "'Bangers', cursive", fontSize: '1.5rem', color: 'var(--felt-green)', marginBottom: '1rem', letterSpacing: '0.05em' }}>
+                      Unknown Player
+                    </div>
+                  )}
+                  <div style={{ display: 'flex', gap: '2rem', fontSize: '1.25rem', fontWeight: 700 }}>
+                    <div style={{ color: 'var(--card-red)' }}>
+                      I: {counts.I}
+                    </div>
+                    <div style={{ color: 'var(--card-black)' }}>
+                      X: {counts.X}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
 
-        <div className="card">
-          <h2 className="text-lg font-semibold mb-4">Event Timeline</h2>
-          <div className="space-y-2">
-            {game.events.map((event) => (
-              <div
-                key={event.id}
-                className="flex items-center gap-3 text-sm border-b border-gray-200 dark:border-gray-700 pb-2"
-              >
-                <span className="text-gray-500 dark:text-gray-400">
-                  {new Date(event.created_at).toLocaleTimeString()}
-                </span>
-                {event.player ? (
-                  <span className="font-medium">{event.player.nickname}</span>
-                ) : (
-                  <span className="font-medium">Unknown Player</span>
-                )}
-                <span
-                  className={`font-bold ${
-                    event.type === 'I'
-                      ? 'text-green-600 dark:text-green-400'
-                      : 'text-red-600 dark:text-red-400'
-                  }`}
+          <div className="event-timeline">
+            <h2 style={{ fontFamily: "'Bangers', cursive", fontSize: '1.75rem', color: 'var(--felt-green)', marginBottom: '1.5rem', letterSpacing: '0.05em' }}>
+              Event Timeline
+            </h2>
+            <div style={{ display: 'grid', gap: '0.75rem' }}>
+              {game.events.map((event) => (
+                <div
+                  key={event.id}
+                  className="event-item"
                 >
-                  {event.type}
-                </span>
-              </div>
-            ))}
+                  <span style={{ color: 'var(--text-light)', fontSize: '0.875rem', minWidth: '100px' }}>
+                    {new Date(event.created_at).toLocaleTimeString()}
+                  </span>
+                  {event.player ? (
+                    <span style={{ fontWeight: 600, color: 'var(--felt-green)', minWidth: '150px' }}>
+                      {event.player.nickname}
+                    </span>
+                  ) : (
+                    <span style={{ fontWeight: 600, color: 'var(--text-light)', minWidth: '150px' }}>
+                      Unknown Player
+                    </span>
+                  )}
+                  <span className={`event-type ${event.type}`}>
+                    {event.type}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-      </main>
-    </div>
+      </section>
+    </PublicLayout>
   )
 }

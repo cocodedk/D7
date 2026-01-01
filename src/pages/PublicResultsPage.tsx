@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { api } from '../lib/api'
-import ResultsTable from '../components/ResultsTable'
+import PublicLayout from '../components/public/PublicLayout'
+import PublicHero from '../components/public/PublicHero'
+import PlayerLeaderboardCard from '../components/public/PlayerLeaderboardCard'
+import '../styles/public.css'
 
 interface TournamentResults {
   [playerId: string]: {
@@ -24,6 +27,7 @@ export default function PublicResultsPage() {
   const [results, setResults] = useState<TournamentResults | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [tournamentDate, setTournamentDate] = useState<string | null>(null)
 
   useEffect(() => {
     if (tournamentId) {
@@ -37,6 +41,17 @@ export default function PublicResultsPage() {
     try {
       const data = await api.public.get<TournamentResults>(`/tournaments/${id}/results`)
       setResults(data)
+
+      // Try to get tournament date for display
+      try {
+        const tournaments = await api.public.get<Array<{ id: string; date: string }>>('/public-tournaments')
+        const tournament = tournaments.find((t) => t.id === id)
+        if (tournament) {
+          setTournamentDate(tournament.date)
+        }
+      } catch {
+        // Ignore if we can't get the date
+      }
     } catch (err) {
       console.error('Failed to load results:', err)
       setError(err instanceof Error ? err.message : 'Failed to load results')
@@ -48,45 +63,89 @@ export default function PublicResultsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-xl font-semibold mb-2">Loading results...</div>
+      <PublicLayout showBackButton backTo="/public">
+        <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: '1.5rem', fontWeight: 600, marginBottom: '1rem' }}>Loading results...</div>
+          </div>
         </div>
-      </div>
+      </PublicLayout>
     )
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-xl font-semibold mb-2 text-red-600 dark:text-red-400">Error</div>
-          <div className="text-gray-600 dark:text-gray-400">{error}</div>
+      <PublicLayout showBackButton backTo="/public">
+        <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: '1.5rem', fontWeight: 600, marginBottom: '1rem', color: 'var(--card-red)' }}>
+              Error
+            </div>
+            <div style={{ color: 'var(--text-light)' }}>{error}</div>
+          </div>
         </div>
-      </div>
+      </PublicLayout>
     )
   }
 
   if (!results || !tournamentId) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-xl font-semibold mb-2">No results found</div>
+      <PublicLayout showBackButton backTo="/public">
+        <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: '1.5rem', fontWeight: 600, marginBottom: '1rem' }}>No results found</div>
+          </div>
         </div>
-      </div>
+      </PublicLayout>
     )
   }
 
+  // Convert results to sorted array
+  const sortedResults = Object.entries(results)
+    .map(([playerId, score]) => ({
+      playerId,
+      player: score.player,
+      score: {
+        plusRemainder: score.plusRemainder,
+        minusRemainder: score.minusRemainder,
+        plusClusters: score.plusClusters,
+        minusClusters: score.minusClusters,
+        netScore: score.netScore,
+      },
+    }))
+    .sort((a, b) => b.score.netScore - a.score.netScore)
+
+  const formattedDate = tournamentDate
+    ? new Date(tournamentDate).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      })
+    : 'Tournament'
+
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-8">
-      <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
-        <div className="max-w-7xl mx-auto px-4 py-3">
-          <h1 className="text-xl font-bold">Tournament Results</h1>
+    <PublicLayout showBackButton backTo="/public" backLabel="← Back to Results">
+      <PublicHero title={formattedDate} subtitle="Tournament Results" />
+      <section className="public-section" style={{ background: 'var(--white)' }}>
+        <div className="public-container">
+          {sortedResults.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-light)' }}>
+              No results available for this tournament
+            </div>
+          ) : (
+            <div className="leaderboard-grid">
+              {sortedResults.map((result, index) => (
+                <PlayerLeaderboardCard
+                  key={result.playerId}
+                  player={result.player}
+                  score={result.score}
+                  rank={index + 1}
+                />
+              ))}
+            </div>
+          )}
         </div>
-      </header>
-      <main className="max-w-7xl mx-auto p-4">
-        <ResultsTable results={results} tournamentId={tournamentId} />
-      </main>
-    </div>
+      </section>
+    </PublicLayout>
   )
 }
