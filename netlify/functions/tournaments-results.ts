@@ -1,7 +1,7 @@
 import { Handler } from '@netlify/functions'
-import { jsonResponse, errorResponse } from '../../_shared/utils'
-import { query } from '../../_shared/db'
-import { calculateTournamentScores, type ScoreEvent } from '../../_shared/scoring'
+import { jsonResponse, errorResponse } from './_shared/utils'
+import { query } from './_shared/db'
+import { calculateTournamentScores, type ScoreEvent } from './_shared/scoring'
 
 interface ScoreEventRow {
   player_id: string
@@ -17,7 +17,8 @@ interface PlayerInfo {
 
 const handler: Handler = async (event) => {
   try {
-    const id = event.path.split('/').slice(-2, -1)[0]
+    // Get ID from query params (set by redirect) or path
+    const id = event.queryStringParameters?.id || event.path.split('/').slice(-2, -1)[0]
 
     if (!id) {
       return errorResponse('Tournament ID is required', 400)

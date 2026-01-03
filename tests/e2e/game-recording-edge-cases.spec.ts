@@ -1,14 +1,18 @@
 import { test, expect } from '@playwright/test'
-import { loginAsAdmin } from './fixtures/auth'
+import { loginAsAdmin, setPageTitleToTestName } from './fixtures/auth'
 import { GamePage } from './pages/GamePage'
 import { TournamentsPage } from './pages/TournamentsPage'
 import { DashboardPage } from './pages/DashboardPage'
 import { ConfirmationScreen } from './pages/ConfirmationScreen'
 import { PlayersPage } from './pages/PlayersPage'
+import { closeAnyActiveTournament, generateUniqueTournamentDate } from './helpers/test-data'
 
 test.describe('Game Recording Edge Cases', () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page }, testInfo) => {
     await loginAsAdmin(page)
+    await setPageTitleToTestName(page, testInfo)
+    // Ensure no active tournament blocks our test
+    await closeAnyActiveTournament(page)
   })
 
   test('should show message when no active tournament', async ({ page }) => {
@@ -45,8 +49,7 @@ test.describe('Game Recording Edge Cases', () => {
       // Create and start tournament with unique date
       const tournamentsPage = new TournamentsPage(page)
       await tournamentsPage.goto()
-      const tournamentDate = new Date()
-      tournamentDate.setDate(tournamentDate.getDate() + Math.floor(Math.random() * 365))
+      const tournamentDate = generateUniqueTournamentDate()
       await tournamentsPage.createTournament(tournamentDate)
       await tournamentsPage.clickStart(tournamentDate)
       await tournamentsPage.expectActiveTournament(tournamentDate)
@@ -132,8 +135,7 @@ test.describe('Game Recording Edge Cases', () => {
       // Create and start tournament with unique date
       const tournamentsPage = new TournamentsPage(page)
       await tournamentsPage.goto()
-      const tournamentDate = new Date()
-      tournamentDate.setDate(tournamentDate.getDate() + Math.floor(Math.random() * 365))
+      const tournamentDate = generateUniqueTournamentDate()
       await tournamentsPage.createTournament(tournamentDate)
       await tournamentsPage.clickStart(tournamentDate)
       await tournamentsPage.expectActiveTournament(tournamentDate)

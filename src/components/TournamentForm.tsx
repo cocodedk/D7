@@ -13,19 +13,40 @@ export default function TournamentForm({ onSave, onCancel }: TournamentFormProps
   const [loading, setLoading] = useState(false)
 
   const handleSubmit = async (e: FormEvent) => {
+    // #region agent log
+    fetch('http://127.0.0.1:7245/ingest/2e161807-a777-4f0a-9e48-5c755a702a4a',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'TournamentForm.tsx:15',message:'handleSubmit entry',data:{date},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+    // #endregion
     e.preventDefault()
     if (!date) {
+      // #region agent log
+      fetch('http://127.0.0.1:7245/ingest/2e161807-a777-4f0a-9e48-5c755a702a4a',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'TournamentForm.tsx:18',message:'handleSubmit no date',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+      // #endregion
       alert('Tournament date is required')
       return
     }
 
+    // #region agent log
+    fetch('http://127.0.0.1:7245/ingest/2e161807-a777-4f0a-9e48-5c755a702a4a',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'TournamentForm.tsx:22',message:'Before setLoading true',data:{date},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+    // #endregion
     setLoading(true)
     try {
+      // #region agent log
+      fetch('http://127.0.0.1:7245/ingest/2e161807-a777-4f0a-9e48-5c755a702a4a',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'TournamentForm.tsx:25',message:'Before onSave call',data:{date},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+      // #endregion
       await onSave(date)
+      // #region agent log
+      fetch('http://127.0.0.1:7245/ingest/2e161807-a777-4f0a-9e48-5c755a702a4a',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'TournamentForm.tsx:27',message:'After onSave success',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+      // #endregion
       setDate(new Date().toISOString().split('T')[0])
     } catch (error) {
+      // #region agent log
+      fetch('http://127.0.0.1:7245/ingest/2e161807-a777-4f0a-9e48-5c755a702a4a',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'TournamentForm.tsx:30',message:'handleSubmit error',data:{error:error instanceof Error?error.message:String(error)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+      // #endregion
       alert(error instanceof Error ? error.message : 'Failed to create tournament')
     } finally {
+      // #region agent log
+      fetch('http://127.0.0.1:7245/ingest/2e161807-a777-4f0a-9e48-5c755a702a4a',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'TournamentForm.tsx:33',message:'handleSubmit finally',data:{loading},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+      // #endregion
       setLoading(false)
     }
   }
@@ -64,6 +85,11 @@ export default function TournamentForm({ onSave, onCancel }: TournamentFormProps
               type="submit"
               className="flex-1 btn btn-primary"
               disabled={loading}
+              onClick={() => {
+                // #region agent log
+                fetch('http://127.0.0.1:7245/ingest/2e161807-a777-4f0a-9e48-5c755a702a4a',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'TournamentForm.tsx:84',message:'Create button clicked',data:{loading,date},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'G'})}).catch(()=>{});
+                // #endregion
+              }}
             >
               {loading ? 'Creating...' : 'Create'}
             </button>

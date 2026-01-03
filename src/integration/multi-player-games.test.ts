@@ -8,7 +8,7 @@ import {
   cleanupTestData,
 } from './test-data'
 import { handler as gamesHandler } from '../../netlify/functions/games/index'
-import { handler as resultsHandler } from '../../netlify/functions/tournaments/[id]/results'
+import { handler as resultsHandler } from '../../netlify/functions/tournaments-results'
 
 describe('Multi-Player Games E2E Tests', () => {
   let authToken: string

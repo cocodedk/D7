@@ -1,7 +1,7 @@
 import { Handler } from '@netlify/functions'
-import { requireAuth } from '../../_shared/auth'
-import { jsonResponse, errorResponse } from '../../_shared/utils'
-import { query, queryOne } from '../../_shared/db'
+import { requireAuth } from './_shared/auth'
+import { jsonResponse, errorResponse } from './_shared/utils'
+import { queryOne } from './_shared/db'
 
 interface Tournament {
   id: string
@@ -14,7 +14,8 @@ interface Tournament {
 
 const handler: Handler = requireAuth(async (event) => {
   try {
-    const id = event.path.split('/').slice(-2, -1)[0]
+    // Get ID from query params (set by redirect) or path
+    const id = event.queryStringParameters?.id || event.path.split('/').slice(-2, -1)[0]
 
     if (!id) {
       return errorResponse('Tournament ID is required', 400)

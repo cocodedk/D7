@@ -10,7 +10,7 @@ import {
 import { handler as playersHandler } from '../../netlify/functions/players/index'
 import { handler as playerHandler } from '../../netlify/functions/players/[id]'
 import { handler as gamesHandler } from '../../netlify/functions/games/index'
-import { handler as resultsHandler } from '../../netlify/functions/tournaments/[id]/results'
+import { handler as resultsHandler } from '../../netlify/functions/tournaments-results'
 import { handler as yearlyResultsHandler } from '../../netlify/functions/results/yearly/[year]'
 
 describe('Player Soft-Delete Impact E2E Tests', () => {

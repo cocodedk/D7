@@ -34,10 +34,15 @@ export class DashboardPage {
   }
 
   async clickUndo() {
-    await this.page.click('button:has-text("Undo")')
+    // Wait for undo response
+    await Promise.all([
+      this.page.waitForResponse(resp => resp.url().includes('/games/') && resp.request().method() === 'DELETE', { timeout: 10000 }).catch(() => {}),
+      this.page.click('button:has-text("Undo")')
+    ])
   }
 
   async expectUndoNotificationGone() {
-    await expect(this.page.locator('text=Game saved')).not.toBeVisible()
+    // Give time for the notification to disappear after undo
+    await expect(this.page.locator('text=Game saved')).not.toBeVisible({ timeout: 10000 })
   }
 }

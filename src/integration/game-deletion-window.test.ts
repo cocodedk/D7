@@ -9,7 +9,7 @@ import {
 } from './test-data'
 import { handler as gamesHandler } from '../../netlify/functions/games/index'
 import { handler as gameHandler } from '../../netlify/functions/games/[id]'
-import { handler as resultsHandler } from '../../netlify/functions/tournaments/[id]/results'
+import { handler as resultsHandler } from '../../netlify/functions/tournaments-results'
 
 describe('Game Deletion Time Window E2E Tests', () => {
   let authToken: string

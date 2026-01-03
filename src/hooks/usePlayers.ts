@@ -45,16 +45,42 @@ export function usePlayers() {
     id: string,
     updates: { name?: string; nickname?: string; avatar?: string }
   ) => {
-    const updated = await api.put<Player>(`/players/${id}`, updates)
-    setPlayers((prev) =>
-      prev.map((p) => (p.id === id ? updated : p))
-    )
-    return updated
+    // #region agent log
+    fetch('http://127.0.0.1:7245/ingest/2e161807-a777-4f0a-9e48-5c755a702a4a',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'usePlayers.ts:updatePlayer',message:'updatePlayer entry',data:{id,updates},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A'})}).catch(()=>{});
+    // #endregion
+    try {
+      const updated = await api.put<Player>(`/players/${id}`, updates)
+      // #region agent log
+      fetch('http://127.0.0.1:7245/ingest/2e161807-a777-4f0a-9e48-5c755a702a4a',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'usePlayers.ts:updatePlayer',message:'updatePlayer success',data:{id,updatedNickname:updated.nickname},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A'})}).catch(()=>{});
+      // #endregion
+      setPlayers((prev) =>
+        prev.map((p) => (p.id === id ? updated : p))
+      )
+      return updated
+    } catch (err) {
+      // #region agent log
+      fetch('http://127.0.0.1:7245/ingest/2e161807-a777-4f0a-9e48-5c755a702a4a',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'usePlayers.ts:updatePlayer',message:'updatePlayer error',data:{id,error:err instanceof Error ? err.message : String(err)},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A'})}).catch(()=>{});
+      // #endregion
+      throw err
+    }
   }
 
   const deletePlayer = async (id: string) => {
-    await api.delete(`/players/${id}`)
-    setPlayers((prev) => prev.filter((p) => p.id !== id))
+    // #region agent log
+    fetch('http://127.0.0.1:7245/ingest/2e161807-a777-4f0a-9e48-5c755a702a4a',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'usePlayers.ts:deletePlayer',message:'deletePlayer entry',data:{id},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'B'})}).catch(()=>{});
+    // #endregion
+    try {
+      await api.delete(`/players/${id}`)
+      // #region agent log
+      fetch('http://127.0.0.1:7245/ingest/2e161807-a777-4f0a-9e48-5c755a702a4a',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'usePlayers.ts:deletePlayer',message:'deletePlayer success',data:{id},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'B'})}).catch(()=>{});
+      // #endregion
+      setPlayers((prev) => prev.filter((p) => p.id !== id))
+    } catch (err) {
+      // #region agent log
+      fetch('http://127.0.0.1:7245/ingest/2e161807-a777-4f0a-9e48-5c755a702a4a',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'usePlayers.ts:deletePlayer',message:'deletePlayer error',data:{id,error:err instanceof Error ? err.message : String(err)},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'B'})}).catch(()=>{});
+      // #endregion
+      throw err
+    }
   }
 
   return {

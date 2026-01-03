@@ -8,11 +8,11 @@ import {
   cleanupTestData,
 } from './test-data'
 import { handler as tournamentsHandler } from '../../netlify/functions/tournaments/index'
-import { handler as activeHandler } from '../../netlify/functions/tournaments/active'
-import { handler as startHandler } from '../../netlify/functions/tournaments/[id]/start'
-import { handler as closeHandler } from '../../netlify/functions/tournaments/[id]/close'
+import { handler as activeHandler } from '../../netlify/functions/tournaments-active'
+import { handler as startHandler } from '../../netlify/functions/tournaments-start'
+import { handler as closeHandler } from '../../netlify/functions/tournaments-close'
 import { handler as gamesHandler } from '../../netlify/functions/games/index'
-import { handler as resultsHandler } from '../../netlify/functions/tournaments/[id]/results'
+import { handler as resultsHandler } from '../../netlify/functions/tournaments-results'
 
 describe('Tournament Lifecycle E2E Tests', () => {
   let authToken: string

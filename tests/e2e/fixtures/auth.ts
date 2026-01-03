@@ -1,4 +1,15 @@
-import { Page } from '@playwright/test'
+import { Page, TestInfo } from '@playwright/test'
+
+/**
+ * Set the page title to include the test name for easier debugging
+ */
+export async function setPageTitleToTestName(page: Page, testInfo: TestInfo): Promise<void> {
+  const testName = testInfo.title
+  const testFile = testInfo.titlePath.slice(0, -1).join(' > ')
+  await page.evaluate(({ testName, testFile }) => {
+    document.title = `[E2E] ${testFile}: ${testName}`
+  }, { testName, testFile })
+}
 
 /**
  * Get admin password from environment variable

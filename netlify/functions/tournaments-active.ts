@@ -1,7 +1,7 @@
 import { Handler } from '@netlify/functions'
-import { requireAuth } from '../_shared/auth'
-import { jsonResponse, errorResponse } from '../_shared/utils'
-import { queryOne } from '../_shared/db'
+import { requireAuth } from './_shared/auth'
+import { jsonResponse, errorResponse } from './_shared/utils'
+import { queryOne } from './_shared/db'
 
 interface Tournament {
   id: string

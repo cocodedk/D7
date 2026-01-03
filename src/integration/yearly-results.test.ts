@@ -67,7 +67,7 @@ describe('Yearly Results Aggregation E2E Tests', () => {
 
     // Close first tournament
     await invokeFunction(
-      (await import('../../netlify/functions/tournaments/[id]/close')).handler,
+      (await import('../../netlify/functions/tournaments-close')).handler,
       {
         httpMethod: 'PUT',
         path: `/api/tournaments/${tournament1Id}/close`,
@@ -84,7 +84,7 @@ describe('Yearly Results Aggregation E2E Tests', () => {
     })
 
     await invokeFunction(
-      (await import('../../netlify/functions/tournaments/[id]/start')).handler,
+      (await import('../../netlify/functions/tournaments-start')).handler,
       {
         httpMethod: 'PUT',
         path: `/api/tournaments/${tournament2Id}/start`,
@@ -162,7 +162,7 @@ describe('Yearly Results Aggregation E2E Tests', () => {
 
     // Close first tournament
     await invokeFunction(
-      (await import('../../netlify/functions/tournaments/[id]/close')).handler,
+      (await import('../../netlify/functions/tournaments-close')).handler,
       {
         httpMethod: 'PUT',
         path: `/api/tournaments/${tournament1Id}/close`,
@@ -179,7 +179,7 @@ describe('Yearly Results Aggregation E2E Tests', () => {
     })
 
     await invokeFunction(
-      (await import('../../netlify/functions/tournaments/[id]/start')).handler,
+      (await import('../../netlify/functions/tournaments-start')).handler,
       {
         httpMethod: 'PUT',
         path: `/api/tournaments/${tournament2Id}/start`,
@@ -303,7 +303,7 @@ describe('Yearly Results Aggregation E2E Tests', () => {
 
 
     await invokeFunction(
-      (await import('../../netlify/functions/tournaments/[id]/close')).handler,
+      (await import('../../netlify/functions/tournaments-close')).handler,
       {
         httpMethod: 'PUT',
         path: `/api/tournaments/${tournament1Id}/close`,
@@ -320,7 +320,7 @@ describe('Yearly Results Aggregation E2E Tests', () => {
     })
 
     await invokeFunction(
-      (await import('../../netlify/functions/tournaments/[id]/start')).handler,
+      (await import('../../netlify/functions/tournaments-start')).handler,
       {
         httpMethod: 'PUT',
         path: `/api/tournaments/${tournament2Id}/start`,

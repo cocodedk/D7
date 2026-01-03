@@ -12,6 +12,36 @@
   directory = "netlify/functions"
 
 [[redirects]]
+  from = "/api/tournaments/active"
+  to = "/.netlify/functions/tournaments-active"
+  status = 200
+
+[[redirects]]
+  from = "/api/tournaments/:id/start"
+  to = "/.netlify/functions/tournaments-start?id=:id"
+  status = 200
+
+[[redirects]]
+  from = "/api/tournaments/:id/close"
+  to = "/.netlify/functions/tournaments-close?id=:id"
+  status = 200
+
+[[redirects]]
+  from = "/api/tournaments/:id/results"
+  to = "/.netlify/functions/tournaments-results?id=:id"
+  status = 200
+
+[[redirects]]
+  from = "/api/players/:id"
+  to = "/.netlify/functions/players-by-id?id=:id"
+  status = 200
+
+[[redirects]]
+  from = "/api/games/:id"
+  to = "/.netlify/functions/games-by-id?id=:id"
+  status = 200
+
+[[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/:splat"
   status = 200

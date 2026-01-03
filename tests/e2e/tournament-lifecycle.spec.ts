@@ -1,19 +1,23 @@
 import { test, expect } from '@playwright/test'
-import { loginAsAdmin } from './fixtures/auth'
+import { loginAsAdmin, setPageTitleToTestName } from './fixtures/auth'
 import { TournamentsPage } from './pages/TournamentsPage'
 import { GamePage } from './pages/GamePage'
+import { closeAnyActiveTournament, generateUniqueTournamentDate } from './helpers/test-data'
 
 test.describe('Tournament Lifecycle', () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page }, testInfo) => {
     await loginAsAdmin(page)
+    await setPageTitleToTestName(page, testInfo)
+    // Ensure no active tournament blocks our test
+    await closeAnyActiveTournament(page)
   })
 
   test('should create and start tournament', async ({ page }) => {
     const tournamentsPage = new TournamentsPage(page)
     await tournamentsPage.goto()
 
-    // Create new tournament
-    const tournamentDate = new Date()
+    // Create new tournament with unique date to avoid collisions
+    const tournamentDate = generateUniqueTournamentDate()
     await tournamentsPage.createTournament(tournamentDate)
 
     // Verify tournament appears in list
@@ -34,8 +38,7 @@ test.describe('Tournament Lifecycle', () => {
     await tournamentsPage.goto()
 
     // Create and start tournament with unique date to avoid collisions
-    const tournamentDate = new Date()
-    tournamentDate.setDate(tournamentDate.getDate() + Math.floor(Math.random() * 365))
+    const tournamentDate = generateUniqueTournamentDate()
     await tournamentsPage.createTournament(tournamentDate)
     await tournamentsPage.clickStart(tournamentDate)
     await tournamentsPage.expectActiveTournament(tournamentDate)
@@ -58,8 +61,7 @@ test.describe('Tournament Lifecycle', () => {
     await tournamentsPage.goto()
 
     // Create and start tournament A with unique date
-    const tournamentDateA = new Date()
-    tournamentDateA.setDate(tournamentDateA.getDate() + Math.floor(Math.random() * 365) + 1)
+    const tournamentDateA = generateUniqueTournamentDate()
     await tournamentsPage.createTournament(tournamentDateA)
     await tournamentsPage.clickStart(tournamentDateA)
     await tournamentsPage.expectActiveTournament(tournamentDateA)
@@ -75,8 +77,7 @@ test.describe('Tournament Lifecycle', () => {
     await tournamentsPage.expectNewTournamentButtonEnabled()
 
     // Create and start tournament B with unique date
-    const tournamentDateB = new Date()
-    tournamentDateB.setDate(tournamentDateB.getDate() + Math.floor(Math.random() * 365) + 2)
+    const tournamentDateB = generateUniqueTournamentDate()
     await tournamentsPage.createTournament(tournamentDateB)
     await tournamentsPage.clickStart(tournamentDateB)
 
@@ -89,8 +90,7 @@ test.describe('Tournament Lifecycle', () => {
     await tournamentsPage.goto()
 
     // Create, start, and close tournament with unique date
-    const tournamentDate = new Date()
-    tournamentDate.setDate(tournamentDate.getDate() + Math.floor(Math.random() * 365))
+    const tournamentDate = generateUniqueTournamentDate()
     await tournamentsPage.createTournament(tournamentDate)
     await tournamentsPage.clickStart(tournamentDate)
     await tournamentsPage.expectActiveTournament(tournamentDate)

@@ -1,10 +1,11 @@
 import { test, expect } from '@playwright/test'
-import { loginAsAdmin } from './fixtures/auth'
+import { loginAsAdmin, setPageTitleToTestName } from './fixtures/auth'
 import { PlayersPage } from './pages/PlayersPage'
 
 test.describe('Player Management', () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page }, testInfo) => {
     await loginAsAdmin(page)
+    await setPageTitleToTestName(page, testInfo)
   })
 
   test('should create player', async ({ page }) => {

@@ -22,6 +22,9 @@ async function request<T>(
   }
 
   const url = `${API_BASE}${endpoint}`;
+  // #region agent log
+  fetch('http://127.0.0.1:7245/ingest/2e161807-a777-4f0a-9e48-5c755a702a4a',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api.ts:24',message:'API request',data:{endpoint,url,method:options.method||'GET'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H'})}).catch(()=>{});
+  // #endregion
 
   const response = await fetch(url, {
     ...options,
@@ -52,6 +55,9 @@ async function request<T>(
   }
 
   const jsonData = await response.json();
+  // #region agent log
+  fetch('http://127.0.0.1:7245/ingest/2e161807-a777-4f0a-9e48-5c755a702a4a',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api.ts:54',message:'API response parsed',data:{endpoint,status:response.status,isArray:Array.isArray(jsonData),dataType:typeof jsonData,dataLength:Array.isArray(jsonData)?jsonData.length:null},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F'})}).catch(()=>{});
+  // #endregion
   return jsonData;
 }
 

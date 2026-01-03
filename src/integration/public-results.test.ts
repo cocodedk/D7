@@ -9,7 +9,7 @@ import {
   createTestScoreEvent,
   cleanupTestData,
 } from './test-data'
-import { handler as tournamentResultsHandler } from '../../netlify/functions/tournaments/[id]/results'
+import { handler as tournamentResultsHandler } from '../../netlify/functions/tournaments-results'
 import { handler as yearlyResultsHandler } from '../../netlify/functions/results/yearly/[year]'
 import { handler as gameHandler } from '../../netlify/functions/games/[id]'
 

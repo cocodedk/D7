@@ -8,7 +8,7 @@ import {
   cleanupTestData,
 } from './test-data'
 import { handler as gamesHandler } from '../../netlify/functions/games/index'
-import { handler as resultsHandler } from '../../netlify/functions/tournaments/[id]/results'
+import { handler as resultsHandler } from '../../netlify/functions/tournaments-results'
 import { calculatePlayerScore, type ScoreEvent } from '../../netlify/functions/_shared/scoring'
 
 describe('Scoring Accuracy E2E Tests', () => {

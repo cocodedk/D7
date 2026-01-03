@@ -22,9 +22,13 @@ export class ConfirmationScreen {
 
   async expectPlayerSummary(playerNickname: string, iCount: number, xCount: number) {
     const summary = this.page.locator('.card').filter({ hasText: 'Score Summary' })
-    await expect(summary.locator(`text=${playerNickname}`)).toBeVisible()
-    await expect(summary.locator(`text=I: ${iCount}`)).toBeVisible()
-    await expect(summary.locator(`text=X: ${xCount}`)).toBeVisible()
+    // The row structure is: div > [div with nickname span] + [div with I/X spans]
+    // Find the row that contains the specific nickname as a span.font-medium
+    const playerRow = summary.locator('div.flex.justify-between').filter({
+      has: this.page.locator(`span.font-medium:text-is("${playerNickname}")`)
+    })
+    await expect(playerRow.locator(`text=I: ${iCount}`)).toBeVisible()
+    await expect(playerRow.locator(`text=X: ${xCount}`)).toBeVisible()
   }
 
   async fillComment(comment: string) {

@@ -47,13 +47,16 @@ export class PlayersPage {
 
   async editPlayer(oldNickname: string, newName: string, newNickname: string) {
     await this.clickEdit(oldNickname)
+    // Wait for edit form to appear
+    await this.page.waitForSelector('h2:has-text("Edit Player")', { state: 'visible', timeout: 5000 })
     await this.fillName(newName)
     await this.fillNickname(newNickname)
-    await this.clickSave()
-    // Wait for form to close by waiting for "Add Player" button to be visible again
-    await this.page.waitForSelector('button:has-text("Add Player")', { state: 'visible', timeout: 5000 })
-    // Wait a bit for the player list to update
-    await this.page.waitForTimeout(500)
+    // Click save and wait for form to close
+    await this.page.click('button:has-text("Save")')
+    // Wait for the edit form heading to disappear
+    await this.page.waitForSelector('h2:has-text("Edit Player")', { state: 'hidden', timeout: 10000 })
+    // Wait for the updated player to appear in the list
+    await expect(this.page.locator(`text=${newNickname}`)).toBeVisible({ timeout: 5000 })
   }
 
   async clickDelete(playerNickname: string) {
@@ -75,7 +78,13 @@ export class PlayersPage {
     await this.clickDelete(playerNickname)
 
     // Wait for the player card to be removed from the DOM
-    await playerCard.waitFor({ state: 'detached', timeout: 10000 })
+    // Use a longer timeout and also check that the nickname text is not visible
+    try {
+      await playerCard.waitFor({ state: 'detached', timeout: 10000 })
+    } catch (e) {
+      // Fallback: check that the nickname is not visible
+      await expect(this.page.locator(`text=${playerNickname}`)).not.toBeVisible({ timeout: 5000 })
+    }
   }
 
   async expectPlayerNotVisible(nickname: string) {

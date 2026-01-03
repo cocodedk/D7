@@ -49,6 +49,12 @@ if [ -z "$ADMIN_PASSWORD" ] && [ ! -f ".env" ] && [ ! -f ".env.local" ]; then
   exit 1
 fi
 
+echo -e "${YELLOW}Resetting test database...${NC}"
+node scripts/reset-test-db.cjs || {
+  echo -e "${RED}Warning: Database reset failed. Continuing anyway...${NC}"
+}
+echo ""
+
 echo -e "${GREEN}Running Playwright E2E tests in headed mode...${NC}"
 echo -e "${BLUE}Tests will run with visible browser windows${NC}"
 echo -e "${BLUE}Using line reporter for output${NC}"
