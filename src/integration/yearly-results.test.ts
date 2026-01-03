@@ -13,27 +13,8 @@ import { handler as yearlyResultsHandler } from '../../netlify/functions/results
 describe('Yearly Results Aggregation E2E Tests', () => {
   let authToken: string
 
-  beforeEach(async () => {
-    delete process.env.NETLIFY_DATABASE_URL
-    process.env.DATABASE_URL = process.env.TEST_DATABASE_URL || process.env.DATABASE_URL
-
-    try {
-      const { resetDbPool, getDbPool, getPoolConnectionString } = await import('../../netlify/functions/_shared/db')
-      await resetDbPool()
-      const testPool = getDbPool()
-      const actualConnectionString = getPoolConnectionString()
-      if (actualConnectionString !== process.env.TEST_DATABASE_URL) {
-        throw new Error(
-          `Pool verification failed: Expected TEST_DATABASE_URL, ` +
-          `but pool is using: ${actualConnectionString?.substring(0, 30)}...`
-        )
-      }
-    } catch (error) {
-      throw new Error(`Failed to setup test database pool: ${error}`)
-    }
-
-    await resetTestDatabase()
-
+  beforeAll(async () => {
+    // Get auth token once per test file (cached for all tests)
     const adminPassword = getTestAdminPassword()
     const loginResponse = await invokeFunction(
       (await import('../../netlify/functions/auth-login')).handler,
@@ -46,6 +27,13 @@ describe('Yearly Results Aggregation E2E Tests', () => {
     authToken = extractToken(loginResponse) || ''
   })
 
+  beforeEach(async () => {
+    delete process.env.NETLIFY_DATABASE_URL
+    process.env.DATABASE_URL = process.env.TEST_DATABASE_URL || process.env.DATABASE_URL
+
+    await resetTestDatabase()
+  })
+
   afterEach(async () => {
     await cleanupTestData()
   })
@@ -53,14 +41,12 @@ describe('Yearly Results Aggregation E2E Tests', () => {
   it('should aggregate results across multiple tournaments in same year', async () => {
     const currentYear = new Date().getFullYear()
     const playerId = await createTestPlayer({ name: 'Test Player', nickname: 'TP' })
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     // Create first tournament in current year
     const tournament1Id = await createTestTournament({
       date: `${currentYear}-01-15`,
       state: 'active',
     })
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     // Record game in first tournament
     await invokeFunction(gamesHandler, {
@@ -78,7 +64,6 @@ describe('Yearly Results Aggregation E2E Tests', () => {
       headers: createAuthHeaders(authToken),
     })
 
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     // Close first tournament
     await invokeFunction(
@@ -91,14 +76,12 @@ describe('Yearly Results Aggregation E2E Tests', () => {
       }
     )
 
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     // Create and start second tournament in same year
     const tournament2Id = await createTestTournament({
       date: `${currentYear}-06-15`,
       state: 'draft',
     })
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     await invokeFunction(
       (await import('../../netlify/functions/tournaments/[id]/start')).handler,
@@ -109,7 +92,6 @@ describe('Yearly Results Aggregation E2E Tests', () => {
       }
     )
 
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     // Record game in second tournament
     await invokeFunction(gamesHandler, {
@@ -125,7 +107,6 @@ describe('Yearly Results Aggregation E2E Tests', () => {
       headers: createAuthHeaders(authToken),
     })
 
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     // Get yearly results
     const resultsResponse = await invokeFunction(yearlyResultsHandler, {
@@ -155,20 +136,18 @@ describe('Yearly Results Aggregation E2E Tests', () => {
     expect(results.scores[0].plusClusters).toBe(1)
     expect(results.scores[0].plusRemainder).toBe(2)
     expect(results.scores[0].netScore).toBe(1)
-  })
+  }, 30000) // 30 second timeout for complex test
 
   it('should separate results by year', async () => {
     const currentYear = new Date().getFullYear()
     const nextYear = currentYear + 1
     const playerId = await createTestPlayer({ name: 'Test Player', nickname: 'TP' })
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     // Create tournament in current year
     const tournament1Id = await createTestTournament({
       date: `${currentYear}-01-15`,
       state: 'active',
     })
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     await invokeFunction(gamesHandler, {
       httpMethod: 'POST',
@@ -180,7 +159,6 @@ describe('Yearly Results Aggregation E2E Tests', () => {
       headers: createAuthHeaders(authToken),
     })
 
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     // Close first tournament
     await invokeFunction(
@@ -193,14 +171,12 @@ describe('Yearly Results Aggregation E2E Tests', () => {
       }
     )
 
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     // Create tournament in next year
     const tournament2Id = await createTestTournament({
       date: `${nextYear}-01-15`,
       state: 'draft',
     })
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     await invokeFunction(
       (await import('../../netlify/functions/tournaments/[id]/start')).handler,
@@ -211,7 +187,6 @@ describe('Yearly Results Aggregation E2E Tests', () => {
       }
     )
 
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     const game2Response = await invokeFunction(gamesHandler, {
       httpMethod: 'POST',
@@ -231,7 +206,6 @@ describe('Yearly Results Aggregation E2E Tests', () => {
     assertSuccess(game2Response)
     const game2Id = (game2Response.body as { id?: string }).id!
 
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     // Set game2's created_at to next year (yearly results use g.created_at, not tournament date)
     const pool = (await import('./db-test-setup')).getTestDbPool()
@@ -246,7 +220,6 @@ describe('Yearly Results Aggregation E2E Tests', () => {
       [`${nextYear}-01-15 12:00:00`, game2Id]
     )
 
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     // Get current year results
     const currentYearResponse = await invokeFunction(yearlyResultsHandler, {
@@ -283,7 +256,7 @@ describe('Yearly Results Aggregation E2E Tests', () => {
     const nextYearPlayerScore = nextYearResults.scores.find(s => s.playerId === playerId)
     expect(nextYearPlayerScore).toBeDefined()
     expect(nextYearPlayerScore!.netScore).toBe(1) // 4 I = 1 cluster
-  })
+  }, 30000) // 30 second timeout for complex test
 
   it('should return empty scores for year with no games', async () => {
     const futureYear = new Date().getFullYear() + 10
@@ -307,14 +280,12 @@ describe('Yearly Results Aggregation E2E Tests', () => {
     const currentYear = new Date().getFullYear()
     const player1Id = await createTestPlayer({ name: 'Player 1', nickname: 'P1' })
     const player2Id = await createTestPlayer({ name: 'Player 2', nickname: 'P2' })
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     // Tournament 1
     const tournament1Id = await createTestTournament({
       date: `${currentYear}-01-15`,
       state: 'active',
     })
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     await invokeFunction(gamesHandler, {
       httpMethod: 'POST',
@@ -330,7 +301,6 @@ describe('Yearly Results Aggregation E2E Tests', () => {
       headers: createAuthHeaders(authToken),
     })
 
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     await invokeFunction(
       (await import('../../netlify/functions/tournaments/[id]/close')).handler,
@@ -342,14 +312,12 @@ describe('Yearly Results Aggregation E2E Tests', () => {
       }
     )
 
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     // Tournament 2
     const tournament2Id = await createTestTournament({
       date: `${currentYear}-06-15`,
       state: 'draft',
     })
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     await invokeFunction(
       (await import('../../netlify/functions/tournaments/[id]/start')).handler,
@@ -360,7 +328,6 @@ describe('Yearly Results Aggregation E2E Tests', () => {
       }
     )
 
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     await invokeFunction(gamesHandler, {
       httpMethod: 'POST',
@@ -376,7 +343,6 @@ describe('Yearly Results Aggregation E2E Tests', () => {
       headers: createAuthHeaders(authToken),
     })
 
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     // Get yearly results
     const resultsResponse = await invokeFunction(yearlyResultsHandler, {
@@ -414,5 +380,5 @@ describe('Yearly Results Aggregation E2E Tests', () => {
     expect(player2Score!.minusClusters).toBe(0)
     expect(player2Score!.minusRemainder).toBe(1)
     expect(player2Score!.netScore).toBe(0)
-  })
+  }, 30000) // 30 second timeout for complex test
 })

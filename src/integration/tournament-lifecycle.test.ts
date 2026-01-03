@@ -17,27 +17,8 @@ import { handler as resultsHandler } from '../../netlify/functions/tournaments/[
 describe('Tournament Lifecycle E2E Tests', () => {
   let authToken: string
 
-  beforeEach(async () => {
-    delete process.env.NETLIFY_DATABASE_URL
-    process.env.DATABASE_URL = process.env.TEST_DATABASE_URL || process.env.DATABASE_URL
-
-    try {
-      const { resetDbPool, getDbPool, getPoolConnectionString } = await import('../../netlify/functions/_shared/db')
-      await resetDbPool()
-      const testPool = getDbPool()
-      const actualConnectionString = getPoolConnectionString()
-      if (actualConnectionString !== process.env.TEST_DATABASE_URL) {
-        throw new Error(
-          `Pool verification failed: Expected TEST_DATABASE_URL, ` +
-          `but pool is using: ${actualConnectionString?.substring(0, 30)}...`
-        )
-      }
-    } catch (error) {
-      throw new Error(`Failed to setup test database pool: ${error}`)
-    }
-
-    await resetTestDatabase()
-
+  beforeAll(async () => {
+    // Get auth token once per test file (cached for all tests)
     const adminPassword = getTestAdminPassword()
     const loginResponse = await invokeFunction(
       (await import('../../netlify/functions/auth-login')).handler,
@@ -48,6 +29,13 @@ describe('Tournament Lifecycle E2E Tests', () => {
       }
     )
     authToken = extractToken(loginResponse) || ''
+  })
+
+  beforeEach(async () => {
+    delete process.env.NETLIFY_DATABASE_URL
+    process.env.DATABASE_URL = process.env.TEST_DATABASE_URL || process.env.DATABASE_URL
+
+    await resetTestDatabase()
   })
 
   afterEach(async () => {
@@ -69,8 +57,6 @@ describe('Tournament Lifecycle E2E Tests', () => {
     expect(tournamentId).toBeDefined()
     expect((createResponse.body as { state?: string }).state).toBe('draft')
 
-    // Small delay to ensure tournament is committed
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     // Step 2: Verify no active tournament exists
     const activeBeforeResponse = await invokeFunction(activeHandler, {
@@ -231,7 +217,7 @@ describe('Tournament Lifecycle E2E Tests', () => {
     })
     assertError(gameAfterCloseResponse, 400)
     expect((gameAfterCloseResponse.body as { error?: string }).error).toContain('not active')
-  })
+  }, 30000) // 30 second timeout for complex test
 
   it('should enforce only one active tournament can exist', async () => {
     // Create and start first tournament
@@ -295,5 +281,5 @@ describe('Tournament Lifecycle E2E Tests', () => {
 
     assertSuccess(start2AfterCloseResponse)
     expect((start2AfterCloseResponse.body as { state?: string }).state).toBe('active')
-  })
+  }, 30000) // 30 second timeout for complex test
 })

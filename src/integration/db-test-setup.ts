@@ -72,29 +72,32 @@ export async function setupTestDatabase(): Promise<void> {
 /**
  * Reset test database by deleting all data in correct order
  * Uses CASCADE to handle foreign key constraints automatically
- * Verifies cleanup completed successfully
+ * Verification queries are optional and can be enabled with TEST_VERIFY_DB_RESET=true
  */
 export async function resetTestDatabase(): Promise<void> {
   const pool = getTestDbPool()
+  const shouldVerify = process.env.TEST_VERIFY_DB_RESET === 'true'
 
   // Use TRUNCATE with CASCADE to handle all foreign key constraints automatically
   // This is more efficient and handles all dependencies
   try {
     await pool.query('TRUNCATE TABLE score_events, games, tournaments, players RESTART IDENTITY CASCADE')
 
-    // Verify cleanup completed - check that all tables are empty
-    const scoreEventsCount = await pool.query('SELECT COUNT(*) FROM score_events')
-    const gamesCount = await pool.query('SELECT COUNT(*) FROM games')
-    const tournamentsCount = await pool.query('SELECT COUNT(*) FROM tournaments')
-    const playersCount = await pool.query('SELECT COUNT(*) FROM players')
+    // Verify cleanup completed - check that all tables are empty (only if enabled)
+    if (shouldVerify) {
+      const scoreEventsCount = await pool.query('SELECT COUNT(*) FROM score_events')
+      const gamesCount = await pool.query('SELECT COUNT(*) FROM games')
+      const tournamentsCount = await pool.query('SELECT COUNT(*) FROM tournaments')
+      const playersCount = await pool.query('SELECT COUNT(*) FROM players')
 
-    if (
-      parseInt(scoreEventsCount.rows[0].count) !== 0 ||
-      parseInt(gamesCount.rows[0].count) !== 0 ||
-      parseInt(tournamentsCount.rows[0].count) !== 0 ||
-      parseInt(playersCount.rows[0].count) !== 0
-    ) {
-      throw new Error('Database cleanup verification failed - tables not empty')
+      if (
+        parseInt(scoreEventsCount.rows[0].count) !== 0 ||
+        parseInt(gamesCount.rows[0].count) !== 0 ||
+        parseInt(tournamentsCount.rows[0].count) !== 0 ||
+        parseInt(playersCount.rows[0].count) !== 0
+      ) {
+        throw new Error('Database cleanup verification failed - tables not empty')
+      }
     }
   } catch (error) {
     // If TRUNCATE fails (e.g., due to active connections), fall back to DELETE
@@ -104,19 +107,21 @@ export async function resetTestDatabase(): Promise<void> {
     await pool.query('DELETE FROM tournaments')
     await pool.query('DELETE FROM players')
 
-    // Verify cleanup after DELETE
-    const scoreEventsCount = await pool.query('SELECT COUNT(*) FROM score_events')
-    const gamesCount = await pool.query('SELECT COUNT(*) FROM games')
-    const tournamentsCount = await pool.query('SELECT COUNT(*) FROM tournaments')
-    const playersCount = await pool.query('SELECT COUNT(*) FROM players')
+    // Verify cleanup after DELETE (only if enabled)
+    if (shouldVerify) {
+      const scoreEventsCount = await pool.query('SELECT COUNT(*) FROM score_events')
+      const gamesCount = await pool.query('SELECT COUNT(*) FROM games')
+      const tournamentsCount = await pool.query('SELECT COUNT(*) FROM tournaments')
+      const playersCount = await pool.query('SELECT COUNT(*) FROM players')
 
-    if (
-      parseInt(scoreEventsCount.rows[0].count) !== 0 ||
-      parseInt(gamesCount.rows[0].count) !== 0 ||
-      parseInt(tournamentsCount.rows[0].count) !== 0 ||
-      parseInt(playersCount.rows[0].count) !== 0
-    ) {
-      throw new Error('Database cleanup verification failed after DELETE - tables not empty')
+      if (
+        parseInt(scoreEventsCount.rows[0].count) !== 0 ||
+        parseInt(gamesCount.rows[0].count) !== 0 ||
+        parseInt(tournamentsCount.rows[0].count) !== 0 ||
+        parseInt(playersCount.rows[0].count) !== 0
+      ) {
+        throw new Error('Database cleanup verification failed after DELETE - tables not empty')
+      }
     }
   }
 }

@@ -17,27 +17,8 @@ describe('Player Soft-Delete Impact E2E Tests', () => {
   let authToken: string
   let tournamentId: string
 
-  beforeEach(async () => {
-    delete process.env.NETLIFY_DATABASE_URL
-    process.env.DATABASE_URL = process.env.TEST_DATABASE_URL || process.env.DATABASE_URL
-
-    try {
-      const { resetDbPool, getDbPool, getPoolConnectionString } = await import('../../netlify/functions/_shared/db')
-      await resetDbPool()
-      const testPool = getDbPool()
-      const actualConnectionString = getPoolConnectionString()
-      if (actualConnectionString !== process.env.TEST_DATABASE_URL) {
-        throw new Error(
-          `Pool verification failed: Expected TEST_DATABASE_URL, ` +
-          `but pool is using: ${actualConnectionString?.substring(0, 30)}...`
-        )
-      }
-    } catch (error) {
-      throw new Error(`Failed to setup test database pool: ${error}`)
-    }
-
-    await resetTestDatabase()
-
+  beforeAll(async () => {
+    // Get auth token once per test file (cached for all tests)
     const adminPassword = getTestAdminPassword()
     const loginResponse = await invokeFunction(
       (await import('../../netlify/functions/auth-login')).handler,
@@ -48,9 +29,15 @@ describe('Player Soft-Delete Impact E2E Tests', () => {
       }
     )
     authToken = extractToken(loginResponse) || ''
+  })
+
+  beforeEach(async () => {
+    delete process.env.NETLIFY_DATABASE_URL
+    process.env.DATABASE_URL = process.env.TEST_DATABASE_URL || process.env.DATABASE_URL
+
+    await resetTestDatabase()
 
     tournamentId = await createTestTournament({ date: '2024-01-15', state: 'active' })
-    await new Promise(resolve => setTimeout(resolve, 50))
   })
 
   afterEach(async () => {
@@ -61,7 +48,6 @@ describe('Player Soft-Delete Impact E2E Tests', () => {
     const player1Id = await createTestPlayer({ name: 'Player 1', nickname: 'P1' })
     const player2Id = await createTestPlayer({ name: 'Player 2', nickname: 'P2' })
     const player3Id = await createTestPlayer({ name: 'Player 3', nickname: 'P3' })
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     // Verify all players appear in list
     const listBefore = await invokeFunction(playersHandler, {
@@ -85,7 +71,6 @@ describe('Player Soft-Delete Impact E2E Tests', () => {
       queryStringParameters: { id: player2Id },
     })
 
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     // Verify player2 no longer appears in list
     const listAfter = await invokeFunction(playersHandler, {
@@ -105,7 +90,6 @@ describe('Player Soft-Delete Impact E2E Tests', () => {
   it('should preserve soft-deleted player scores in tournament results', async () => {
     const player1Id = await createTestPlayer({ name: 'Player 1', nickname: 'P1' })
     const player2Id = await createTestPlayer({ name: 'Player 2', nickname: 'P2' })
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     // Record games with scores for both players
     await invokeFunction(gamesHandler, {
@@ -127,7 +111,6 @@ describe('Player Soft-Delete Impact E2E Tests', () => {
       headers: createAuthHeaders(authToken),
     })
 
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     // Verify both players appear in tournament results
     const resultsBefore = await invokeFunction(resultsHandler, {
@@ -155,7 +138,6 @@ describe('Player Soft-Delete Impact E2E Tests', () => {
       queryStringParameters: { id: player2Id },
     })
 
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     // Verify player2 scores still appear in tournament results
     const resultsAfter = await invokeFunction(resultsHandler, {
@@ -180,7 +162,6 @@ describe('Player Soft-Delete Impact E2E Tests', () => {
     const currentYear = new Date().getFullYear()
     const player1Id = await createTestPlayer({ name: 'Player 1', nickname: 'P1' })
     const player2Id = await createTestPlayer({ name: 'Player 2', nickname: 'P2' })
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     // Record games with scores
     await invokeFunction(gamesHandler, {
@@ -200,7 +181,6 @@ describe('Player Soft-Delete Impact E2E Tests', () => {
       headers: createAuthHeaders(authToken),
     })
 
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     // Verify both players appear in yearly results
     const yearlyBefore = await invokeFunction(yearlyResultsHandler, {
@@ -229,7 +209,6 @@ describe('Player Soft-Delete Impact E2E Tests', () => {
       queryStringParameters: { id: player2Id },
     })
 
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     // Verify player2 scores still appear in yearly results
     const yearlyAfter = await invokeFunction(yearlyResultsHandler, {
@@ -251,7 +230,6 @@ describe('Player Soft-Delete Impact E2E Tests', () => {
 
   it('should verify soft-delete sets deleted_at timestamp', async () => {
     const playerId = await createTestPlayer({ name: 'Test Player', nickname: 'TP' })
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     // Soft-delete player
     await invokeFunction(playerHandler, {
@@ -261,7 +239,6 @@ describe('Player Soft-Delete Impact E2E Tests', () => {
       queryStringParameters: { id: playerId },
     })
 
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     // Verify deleted_at is set in database
     const pool = (await import('./db-test-setup')).getTestDbPool()
@@ -275,7 +252,6 @@ describe('Player Soft-Delete Impact E2E Tests', () => {
 
   it('should allow recording games for players before soft-delete', async () => {
     const playerId = await createTestPlayer({ name: 'Test Player', nickname: 'TP' })
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     // Record game before soft-delete
     const gameBeforeResponse = await invokeFunction(gamesHandler, {
@@ -290,7 +266,6 @@ describe('Player Soft-Delete Impact E2E Tests', () => {
 
     assertSuccess(gameBeforeResponse)
 
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     // Soft-delete player
     await invokeFunction(playerHandler, {
@@ -300,7 +275,6 @@ describe('Player Soft-Delete Impact E2E Tests', () => {
       queryStringParameters: { id: playerId },
     })
 
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     // Verify game still exists and scores are preserved
     const resultsResponse = await invokeFunction(resultsHandler, {

@@ -33,15 +33,12 @@ test.describe('Tournament Lifecycle', () => {
     const tournamentsPage = new TournamentsPage(page)
     await tournamentsPage.goto()
 
-    // Create and start tournament
+    // Create and start tournament with unique date to avoid collisions
     const tournamentDate = new Date()
-    try {
-      await tournamentsPage.createTournament(tournamentDate)
-      await tournamentsPage.clickStart(tournamentDate)
-      await page.waitForTimeout(1000)
-    } catch {
-      // Tournament might already exist
-    }
+    tournamentDate.setDate(tournamentDate.getDate() + Math.floor(Math.random() * 365))
+    await tournamentsPage.createTournament(tournamentDate)
+    await tournamentsPage.clickStart(tournamentDate)
+    await tournamentsPage.expectActiveTournament(tournamentDate)
 
     // Close tournament with confirmation
     await tournamentsPage.confirmClose(tournamentDate)
@@ -60,32 +57,26 @@ test.describe('Tournament Lifecycle', () => {
     const tournamentsPage = new TournamentsPage(page)
     await tournamentsPage.goto()
 
-    // Create and start tournament A
+    // Create and start tournament A with unique date
     const tournamentDateA = new Date()
-    tournamentDateA.setDate(tournamentDateA.getDate() + 1)
-
-    try {
-      await tournamentsPage.createTournament(tournamentDateA)
-      await tournamentsPage.clickStart(tournamentDateA)
-      await page.waitForTimeout(1000)
-    } catch {
-      // Tournament might already exist
-    }
+    tournamentDateA.setDate(tournamentDateA.getDate() + Math.floor(Math.random() * 365) + 1)
+    await tournamentsPage.createTournament(tournamentDateA)
+    await tournamentsPage.clickStart(tournamentDateA)
+    await tournamentsPage.expectActiveTournament(tournamentDateA)
 
     // Verify "New Tournament" button is disabled
     await tournamentsPage.expectNewTournamentButtonDisabled()
 
     // Close tournament A
     await tournamentsPage.confirmClose(tournamentDateA)
-    await page.waitForTimeout(1000)
+    await tournamentsPage.expectNoActiveTournament()
 
     // Now should be able to create new tournament
     await tournamentsPage.expectNewTournamentButtonEnabled()
 
-    // Create and start tournament B
+    // Create and start tournament B with unique date
     const tournamentDateB = new Date()
-    tournamentDateB.setDate(tournamentDateB.getDate() + 2)
-
+    tournamentDateB.setDate(tournamentDateB.getDate() + Math.floor(Math.random() * 365) + 2)
     await tournamentsPage.createTournament(tournamentDateB)
     await tournamentsPage.clickStart(tournamentDateB)
 
@@ -97,17 +88,14 @@ test.describe('Tournament Lifecycle', () => {
     const tournamentsPage = new TournamentsPage(page)
     await tournamentsPage.goto()
 
-    // Create, start, and close tournament
+    // Create, start, and close tournament with unique date
     const tournamentDate = new Date()
-    try {
-      await tournamentsPage.createTournament(tournamentDate)
-      await tournamentsPage.clickStart(tournamentDate)
-      await page.waitForTimeout(1000)
-      await tournamentsPage.confirmClose(tournamentDate)
-      await page.waitForTimeout(1000)
-    } catch {
-      // Tournament might already exist
-    }
+    tournamentDate.setDate(tournamentDate.getDate() + Math.floor(Math.random() * 365))
+    await tournamentsPage.createTournament(tournamentDate)
+    await tournamentsPage.clickStart(tournamentDate)
+    await tournamentsPage.expectActiveTournament(tournamentDate)
+    await tournamentsPage.confirmClose(tournamentDate)
+    await tournamentsPage.expectTournamentClosed(tournamentDate)
 
     // Try to navigate to game page
     const gamePage = new GamePage(page)

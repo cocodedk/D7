@@ -30,10 +30,27 @@ const handler: Handler = requireAuth(async (event) => {
       }
 
       // Check if a tournament with this date already exists
-      const existing = await queryOne<{ id: string }>(
-        'SELECT id FROM tournaments WHERE date = $1',
-        [body.date]
-      )
+      let existing: { id: string } | null
+      try {
+        existing = await queryOne<{ id: string }>(
+          'SELECT id FROM tournaments WHERE date = $1',
+          [body.date]
+        )
+      } catch (queryError: any) {
+        // If query fails due to timeout/connection error, check for duplicate via INSERT
+        // This handles cases where the SELECT times out but INSERT would catch duplicate
+        const isTimeoutError =
+          queryError?.message?.includes('timeout') ||
+          queryError?.message?.includes('Connection terminated') ||
+          queryError?.code === 'ETIMEDOUT'
+
+        if (isTimeoutError) {
+          // Try INSERT - if it's a duplicate, we'll catch it in the INSERT try-catch
+          existing = null
+        } else {
+          throw queryError
+        }
+      }
 
       if (existing) {
         return errorResponse('A tournament already exists for this date', 409)
@@ -65,17 +82,34 @@ const handler: Handler = requireAuth(async (event) => {
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error)
     const errorStack = error instanceof Error ? error.stack : undefined
+
+    // Check if this is a timeout/connection error
+    const isTimeoutError =
+      errorMessage.includes('timeout') ||
+      errorMessage.includes('Connection terminated') ||
+      errorMessage.includes('ETIMEDOUT') ||
+      (error as any)?.code === 'ETIMEDOUT'
+
     console.error('[tournaments/index] Error:', {
       message: errorMessage,
       stack: errorStack,
       error: error,
+      isTimeoutError,
       env: {
         hasNetlifyDbUrl: !!process.env.NETLIFY_DATABASE_URL,
         hasDatabaseUrl: !!process.env.DATABASE_URL,
         hasTestDbUrl: !!process.env.TEST_DATABASE_URL,
       }
     })
-    return errorResponse(`Internal server error: ${errorMessage}`, 500)
+
+    // Return 503 for timeout errors, 500 for other errors
+    const statusCode = isTimeoutError ? 503 : 500
+    return errorResponse(
+      isTimeoutError
+        ? 'Database connection timeout. Please try again.'
+        : `Internal server error: ${errorMessage}`,
+      statusCode
+    )
   }
 })
 

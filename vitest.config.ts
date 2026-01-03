@@ -14,7 +14,14 @@ export default defineConfig({
     setupFiles: ['./src/test-setup.ts'],
     globalSetup: ['./src/integration/setup.ts'],
     globalTeardown: ['./src/integration/teardown.ts'],
+    // Exclude Playwright e2e tests (they use @playwright/test, not vitest)
+    exclude: ['**/node_modules/**', '**/dist/**', '**/tests/e2e/**'],
     // Run tests sequentially to avoid database conflicts in integration tests
+    // NOTE: Parallel execution causes database conflicts because all tests share the same database
+    // To enable parallel execution, we would need:
+    // 1. Database transactions with rollback per test, OR
+    // 2. Separate database schemas per test file, OR
+    // 3. Better synchronization of database resets
     maxWorkers: 1,
     minWorkers: 1,
     coverage: {

@@ -29,12 +29,26 @@ async function request<T>(
   })
 
   if (!response.ok) {
-    if (response.status === 401 && !skipAuth) {
+    // Don't redirect for login endpoint - let it handle its own errors
+    const isLoginEndpoint = endpoint === '/auth-login'
+    if (response.status === 401 && !skipAuth && !isLoginEndpoint) {
       localStorage.removeItem('auth_token')
       window.location.href = '/login'
     }
-    const error = await response.json().catch(() => ({ message: 'Request failed' }))
-    throw new Error(error.message || `HTTP ${response.status}`)
+    let errorMessage = `HTTP ${response.status}`
+    try {
+      const contentType = response.headers.get('content-type')
+      if (contentType && contentType.includes('application/json')) {
+        const error = await response.json()
+        errorMessage = error.error || error.message || errorMessage
+      } else {
+        const text = await response.text()
+        errorMessage = text || errorMessage
+      }
+    } catch {
+      errorMessage = 'Request failed'
+    }
+    throw new Error(errorMessage)
   }
 
   const jsonData = await response.json();

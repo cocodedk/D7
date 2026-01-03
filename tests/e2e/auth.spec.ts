@@ -55,6 +55,8 @@ test.describe('Authentication', () => {
   })
 
   test('should redirect unauthenticated user to login', async ({ page }) => {
+    // Navigate to a page first (required for Firefox localStorage access)
+    await page.goto('/login')
     // Clear any existing auth
     await page.evaluate(() => localStorage.removeItem('auth_token'))
 

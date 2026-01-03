@@ -16,32 +16,8 @@ import { handler as gameHandler } from '../../netlify/functions/games/[id]'
 describe('Public Results Integration Tests', () => {
   let authToken: string
 
-  beforeEach(async () => {
-    // CRITICAL: Ensure handlers use test database
-    delete process.env.NETLIFY_DATABASE_URL
-    process.env.DATABASE_URL = process.env.TEST_DATABASE_URL || process.env.DATABASE_URL
-
-    try {
-      const { resetDbPool, getDbPool, getPoolConnectionString } = await import('../../netlify/functions/_shared/db')
-
-      await resetDbPool()
-
-      const testPool = getDbPool()
-
-      const actualConnectionString = getPoolConnectionString()
-      if (actualConnectionString !== process.env.TEST_DATABASE_URL) {
-        throw new Error(
-          `Pool verification failed in beforeEach: Expected TEST_DATABASE_URL, ` +
-          `but pool is using: ${actualConnectionString?.substring(0, 30)}...`
-        )
-      }
-    } catch (error) {
-      throw new Error(`Failed to setup test database pool: ${error}`)
-    }
-
-    await resetTestDatabase()
-
-    // Get auth token for DELETE tests
+  beforeAll(async () => {
+    // Get auth token once per test file (cached for all tests)
     const adminPassword = getTestAdminPassword()
     const loginResponse = await invokeFunction(
       (await import('../../netlify/functions/auth-login')).handler,
@@ -54,6 +30,14 @@ describe('Public Results Integration Tests', () => {
     authToken = extractToken(loginResponse) || ''
   })
 
+  beforeEach(async () => {
+    // CRITICAL: Ensure handlers use test database
+    delete process.env.NETLIFY_DATABASE_URL
+    process.env.DATABASE_URL = process.env.TEST_DATABASE_URL || process.env.DATABASE_URL
+
+    await resetTestDatabase()
+  })
+
   afterEach(async () => {
     await cleanupTestData()
   })
@@ -63,10 +47,8 @@ describe('Public Results Integration Tests', () => {
       const tournamentId = await createTestTournament({ state: 'active' })
       const playerId = await createTestPlayer({ name: 'Player 1', nickname: 'P1' })
 
-      await new Promise(resolve => setTimeout(resolve, 50))
 
       const gameId = await createTestGame(tournamentId)
-      await new Promise(resolve => setTimeout(resolve, 50))
       await createTestScoreEvent(gameId, playerId, 'I')
       await createTestScoreEvent(gameId, playerId, 'X')
 
@@ -85,10 +67,8 @@ describe('Public Results Integration Tests', () => {
       const tournamentId = await createTestTournament({ state: 'active' })
       const playerId = await createTestPlayer({ name: 'Test Player', nickname: 'TP' })
 
-      await new Promise(resolve => setTimeout(resolve, 50))
 
       const gameId = await createTestGame(tournamentId)
-      await new Promise(resolve => setTimeout(resolve, 50))
       await createTestScoreEvent(gameId, playerId, 'I')
 
       const response = await invokeFunction(tournamentResultsHandler, {
@@ -122,10 +102,8 @@ describe('Public Results Integration Tests', () => {
       const tournamentId = await createTestTournament({ state: 'active' })
       const playerId = await createTestPlayer({ name: 'Player 1', nickname: 'P1' })
 
-      await new Promise(resolve => setTimeout(resolve, 50))
 
       const gameId = await createTestGame(tournamentId)
-      await new Promise(resolve => setTimeout(resolve, 50))
       await createTestScoreEvent(gameId, playerId, 'I')
       await createTestScoreEvent(gameId, playerId, 'X')
 
@@ -146,10 +124,8 @@ describe('Public Results Integration Tests', () => {
       const tournamentId = await createTestTournament({ state: 'active' })
       const playerId = await createTestPlayer({ name: 'Yearly Player', nickname: 'YP' })
 
-      await new Promise(resolve => setTimeout(resolve, 50))
 
       const gameId = await createTestGame(tournamentId)
-      await new Promise(resolve => setTimeout(resolve, 50))
       await createTestScoreEvent(gameId, playerId, 'I')
 
       const response = await invokeFunction(yearlyResultsHandler, {
@@ -196,10 +172,8 @@ describe('Public Results Integration Tests', () => {
       const tournamentId = await createTestTournament({ state: 'active' })
       const playerId = await createTestPlayer({ name: 'Player 1', nickname: 'P1' })
 
-      await new Promise(resolve => setTimeout(resolve, 50))
 
       const gameId = await createTestGame(tournamentId)
-      await new Promise(resolve => setTimeout(resolve, 50))
       await createTestScoreEvent(gameId, playerId, 'I')
       await createTestScoreEvent(gameId, playerId, 'X')
 
@@ -219,10 +193,8 @@ describe('Public Results Integration Tests', () => {
       const tournamentId = await createTestTournament({ state: 'active' })
       const playerId = await createTestPlayer({ name: 'Game Player', nickname: 'GP' })
 
-      await new Promise(resolve => setTimeout(resolve, 50))
 
       const gameId = await createTestGame(tournamentId)
-      await new Promise(resolve => setTimeout(resolve, 50))
       await createTestScoreEvent(gameId, playerId, 'I')
 
       const response = await invokeFunction(gameHandler, {
@@ -257,7 +229,6 @@ describe('Public Results Integration Tests', () => {
   describe('DELETE /api/games/:id (Protected)', () => {
     it('should require authentication for DELETE', async () => {
       const tournamentId = await createTestTournament({ state: 'active' })
-      await new Promise(resolve => setTimeout(resolve, 50))
       const gameId = await createTestGame(tournamentId)
 
       const response = await invokeFunction(gameHandler, {
@@ -271,9 +242,7 @@ describe('Public Results Integration Tests', () => {
 
     it('should allow DELETE with authentication', async () => {
       const tournamentId = await createTestTournament({ state: 'active' })
-      await new Promise(resolve => setTimeout(resolve, 50))
       const gameId = await createTestGame(tournamentId)
-      await new Promise(resolve => setTimeout(resolve, 50))
 
       const response = await invokeFunction(gameHandler, {
         httpMethod: 'DELETE',
@@ -290,10 +259,8 @@ describe('Public Results Integration Tests', () => {
       const tournamentId = await createTestTournament({ state: 'active' })
       const playerId = await createTestPlayer({ name: 'Test Player', nickname: 'TP' })
 
-      await new Promise(resolve => setTimeout(resolve, 50))
 
       const gameId = await createTestGame(tournamentId)
-      await new Promise(resolve => setTimeout(resolve, 50))
       await createTestScoreEvent(gameId, playerId, 'I')
 
       const publicResponse = await invokeFunction(tournamentResultsHandler, {

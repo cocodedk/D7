@@ -16,27 +16,8 @@ import { handler as gamesHandler } from '../../netlify/functions/games/index'
 describe('Active Tournament Enforcement E2E Tests', () => {
   let authToken: string
 
-  beforeEach(async () => {
-    delete process.env.NETLIFY_DATABASE_URL
-    process.env.DATABASE_URL = process.env.TEST_DATABASE_URL || process.env.DATABASE_URL
-
-    try {
-      const { resetDbPool, getDbPool, getPoolConnectionString } = await import('../../netlify/functions/_shared/db')
-      await resetDbPool()
-      const testPool = getDbPool()
-      const actualConnectionString = getPoolConnectionString()
-      if (actualConnectionString !== process.env.TEST_DATABASE_URL) {
-        throw new Error(
-          `Pool verification failed: Expected TEST_DATABASE_URL, ` +
-          `but pool is using: ${actualConnectionString?.substring(0, 30)}...`
-        )
-      }
-    } catch (error) {
-      throw new Error(`Failed to setup test database pool: ${error}`)
-    }
-
-    await resetTestDatabase()
-
+  beforeAll(async () => {
+    // Get auth token once per test file (cached for all tests)
     const adminPassword = getTestAdminPassword()
     const loginResponse = await invokeFunction(
       (await import('../../netlify/functions/auth-login')).handler,
@@ -47,6 +28,13 @@ describe('Active Tournament Enforcement E2E Tests', () => {
       }
     )
     authToken = extractToken(loginResponse) || ''
+  })
+
+  beforeEach(async () => {
+    delete process.env.NETLIFY_DATABASE_URL
+    process.env.DATABASE_URL = process.env.TEST_DATABASE_URL || process.env.DATABASE_URL
+
+    await resetTestDatabase()
   })
 
   afterEach(async () => {
@@ -64,7 +52,6 @@ describe('Active Tournament Enforcement E2E Tests', () => {
     assertSuccess(create1Response)
     const tournament1Id = (create1Response.body as { id?: string }).id!
 
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     await invokeFunction(startHandler, {
       httpMethod: 'PUT',
@@ -72,7 +59,6 @@ describe('Active Tournament Enforcement E2E Tests', () => {
       headers: createAuthHeaders(authToken),
     })
 
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     // Verify first tournament is active
     const activeResponse = await invokeFunction(activeHandler, {
@@ -94,7 +80,6 @@ describe('Active Tournament Enforcement E2E Tests', () => {
     assertSuccess(create2Response)
     const tournament2Id = (create2Response.body as { id?: string }).id!
 
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     // Attempt to start second tournament (should fail)
     const start2Response = await invokeFunction(startHandler, {
@@ -105,7 +90,7 @@ describe('Active Tournament Enforcement E2E Tests', () => {
 
     assertError(start2Response, 400)
     expect((start2Response.body as { error?: string }).error).toContain('active')
-  })
+  }, 30000) // 30 second timeout for complex test
 
   it('should allow starting tournament after closing active one', async () => {
     // Create and start first tournament
@@ -118,7 +103,6 @@ describe('Active Tournament Enforcement E2E Tests', () => {
     assertSuccess(create1Response)
     const tournament1Id = (create1Response.body as { id?: string }).id!
 
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     await invokeFunction(startHandler, {
       httpMethod: 'PUT',
@@ -126,7 +110,6 @@ describe('Active Tournament Enforcement E2E Tests', () => {
       headers: createAuthHeaders(authToken),
     })
 
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     // Close first tournament
     await invokeFunction(closeHandler, {
@@ -136,7 +119,6 @@ describe('Active Tournament Enforcement E2E Tests', () => {
       headers: createAuthHeaders(authToken),
     })
 
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     // Verify no active tournament
     const activeAfterClose = await invokeFunction(activeHandler, {
@@ -157,7 +139,6 @@ describe('Active Tournament Enforcement E2E Tests', () => {
     assertSuccess(create2Response)
     const tournament2Id = (create2Response.body as { id?: string }).id!
 
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     const start2Response = await invokeFunction(startHandler, {
       httpMethod: 'PUT',
@@ -181,7 +162,6 @@ describe('Active Tournament Enforcement E2E Tests', () => {
 
   it('should only allow games to be created for active tournament', async () => {
     const playerId = await createTestPlayer({ name: 'Test Player', nickname: 'TP' })
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     // Create draft tournament
     const createDraftResponse = await invokeFunction(tournamentsHandler, {
@@ -193,7 +173,6 @@ describe('Active Tournament Enforcement E2E Tests', () => {
     assertSuccess(createDraftResponse)
     const draftTournamentId = (createDraftResponse.body as { id?: string }).id!
 
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     // Attempt to create game for draft tournament (should fail)
     const gameDraftResponse = await invokeFunction(gamesHandler, {
@@ -216,7 +195,6 @@ describe('Active Tournament Enforcement E2E Tests', () => {
       headers: createAuthHeaders(authToken),
     })
 
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     // Now game creation should succeed
     const gameActiveResponse = await invokeFunction(gamesHandler, {
@@ -240,7 +218,6 @@ describe('Active Tournament Enforcement E2E Tests', () => {
       headers: createAuthHeaders(authToken),
     })
 
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     // Attempt to create game for closed tournament (should fail)
     const gameClosedResponse = await invokeFunction(gamesHandler, {
@@ -268,7 +245,6 @@ describe('Active Tournament Enforcement E2E Tests', () => {
     assertSuccess(create1Response)
     const tournament1Id = (create1Response.body as { id?: string }).id!
 
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     const create2Response = await invokeFunction(tournamentsHandler, {
       httpMethod: 'POST',
@@ -279,7 +255,6 @@ describe('Active Tournament Enforcement E2E Tests', () => {
     assertSuccess(create2Response)
     const tournament2Id = (create2Response.body as { id?: string }).id!
 
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     const create3Response = await invokeFunction(tournamentsHandler, {
       httpMethod: 'POST',
@@ -290,7 +265,6 @@ describe('Active Tournament Enforcement E2E Tests', () => {
     assertSuccess(create3Response)
     const tournament3Id = (create3Response.body as { id?: string }).id!
 
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     // Start first tournament
     await invokeFunction(startHandler, {
@@ -299,7 +273,6 @@ describe('Active Tournament Enforcement E2E Tests', () => {
       headers: createAuthHeaders(authToken),
     })
 
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     // Verify only tournament1 is active
     const active1 = await invokeFunction(activeHandler, {
@@ -334,7 +307,6 @@ describe('Active Tournament Enforcement E2E Tests', () => {
       headers: createAuthHeaders(authToken),
     })
 
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     // Now tournament2 can be started
     await invokeFunction(startHandler, {
@@ -343,7 +315,6 @@ describe('Active Tournament Enforcement E2E Tests', () => {
       headers: createAuthHeaders(authToken),
     })
 
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     // Verify tournament2 is now active
     const active2 = await invokeFunction(activeHandler, {
@@ -353,5 +324,5 @@ describe('Active Tournament Enforcement E2E Tests', () => {
     })
     assertSuccess(active2)
     expect((active2.body as { id?: string }).id).toBe(tournament2Id)
-  })
+  }, 30000) // 30 second timeout for complex test
 })

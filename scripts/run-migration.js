@@ -2,8 +2,13 @@
 
 import { readFileSync } from 'fs'
 import { fileURLToPath } from 'url'
-import { dirname, join } from 'path'
+import { dirname, join, resolve } from 'path'
 import { Pool } from 'pg'
+import { config } from 'dotenv'
+
+// Load environment variables from .env.local or .env
+config({ path: resolve(process.cwd(), '.env.local') })
+config({ path: resolve(process.cwd(), '.env') })
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)

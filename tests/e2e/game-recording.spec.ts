@@ -12,34 +12,25 @@ test.describe('Game Recording Flow', () => {
   })
 
   test('should complete full game recording flow', async ({ page }) => {
-    // Setup: Create players and active tournament
+    // Setup: Create players and active tournament with unique identifiers
     const playersPage = new PlayersPage(page)
     await playersPage.goto()
 
-    // Create test players if they don't exist
-    try {
-      await playersPage.createPlayer('Test Player One', 'Player1')
-    } catch {
-      // Player might already exist
-    }
-    try {
-      await playersPage.createPlayer('Test Player Two', 'Player2')
-    } catch {
-      // Player might already exist
-    }
+    // Create test players with unique identifiers to avoid collisions
+    const timestamp = Date.now() + Math.random()
+    const player1Nickname = `Player1-${timestamp}`
+    const player2Nickname = `Player2-${timestamp}`
+    await playersPage.createPlayer(`Test Player One ${timestamp}`, player1Nickname)
+    await playersPage.createPlayer(`Test Player Two ${timestamp}`, player2Nickname)
 
-    // Create and start tournament
+    // Create and start tournament with unique date
     const tournamentsPage = new TournamentsPage(page)
     await tournamentsPage.goto()
     const tournamentDate = new Date()
-    try {
-      await tournamentsPage.createTournament(tournamentDate)
-      await tournamentsPage.clickStart(tournamentDate)
-      // Wait for tournament to be active
-      await page.waitForTimeout(1000)
-    } catch {
-      // Tournament might already exist or be active
-    }
+    tournamentDate.setDate(tournamentDate.getDate() + Math.floor(Math.random() * 365))
+    await tournamentsPage.createTournament(tournamentDate)
+    await tournamentsPage.clickStart(tournamentDate)
+    await tournamentsPage.expectActiveTournament(tournamentDate)
 
     // Navigate to game page
     const gamePage = new GamePage(page)
@@ -47,21 +38,21 @@ test.describe('Game Recording Flow', () => {
     await gamePage.expectActiveTournament(tournamentDate)
 
     // Record events: Player1 gets 2 I's, Player2 gets 1 X
-    await gamePage.tapI('Player1')
-    await gamePage.tapI('Player1')
-    await gamePage.tapX('Player2')
+    await gamePage.tapI(player1Nickname)
+    await gamePage.tapI(player1Nickname)
+    await gamePage.tapX(player2Nickname)
 
     // Verify event counts
-    await gamePage.expectEventCount('Player1', 2, 0)
-    await gamePage.expectEventCount('Player2', 0, 1)
+    await gamePage.expectEventCount(player1Nickname, 2, 0)
+    await gamePage.expectEventCount(player2Nickname, 0, 1)
 
     // Verify net scores (no clusters yet, so net should be 0)
     await gamePage.expectNetScore('Player1', 0)
     await gamePage.expectNetScore('Player2', 0)
 
     // Verify remainders
-    await gamePage.expectRemainder('Player1', 2, 0)
-    await gamePage.expectRemainder('Player2', 0, 1)
+    await gamePage.expectRemainder(player1Nickname, 2, 0)
+    await gamePage.expectRemainder(player2Nickname, 0, 1)
 
     // Click Save
     await gamePage.clickSave()
@@ -73,8 +64,8 @@ test.describe('Game Recording Flow', () => {
     await confirmationScreen.expectTournament(tournamentDate)
 
     // Verify summary shows correct counts
-    await confirmationScreen.expectPlayerSummary('Player1', 2, 0)
-    await confirmationScreen.expectPlayerSummary('Player2', 0, 1)
+    await confirmationScreen.expectPlayerSummary(player1Nickname, 2, 0)
+    await confirmationScreen.expectPlayerSummary(player2Nickname, 0, 1)
 
     // Add optional comment
     await confirmationScreen.fillComment('Test game comment')
@@ -92,19 +83,14 @@ test.describe('Game Recording Flow', () => {
   })
 
   test('should not allow saving game with no events', async ({ page }) => {
-    // Setup: Ensure active tournament exists
+    // Setup: Ensure active tournament exists with unique date
     const tournamentsPage = new TournamentsPage(page)
     await tournamentsPage.goto()
     const tournamentDate = new Date()
-
-    // Try to create and start tournament if needed
-    try {
-      await tournamentsPage.createTournament(tournamentDate)
-      await tournamentsPage.clickStart(tournamentDate)
-      await page.waitForTimeout(1000)
-    } catch {
-      // Tournament might already exist
-    }
+    tournamentDate.setDate(tournamentDate.getDate() + Math.floor(Math.random() * 365))
+    await tournamentsPage.createTournament(tournamentDate)
+    await tournamentsPage.clickStart(tournamentDate)
+    await tournamentsPage.expectActiveTournament(tournamentDate)
 
     const gamePage = new GamePage(page)
     await gamePage.goto()
@@ -119,29 +105,35 @@ test.describe('Game Recording Flow', () => {
   })
 
   test('should clear events with confirmation', async ({ page }) => {
-    // Setup: Ensure active tournament and players exist
+    // Setup: Ensure active tournament and players exist with unique identifiers
+    const timestamp = Date.now() + Math.random()
+    const player1Nickname = `Player1-${timestamp}`
+    const player2Nickname = `Player2-${timestamp}`
+
+    const playersPage = new PlayersPage(page)
+    await playersPage.goto()
+    await playersPage.createPlayer(`Test Player One ${timestamp}`, player1Nickname)
+    await playersPage.createPlayer(`Test Player Two ${timestamp}`, player2Nickname)
+
     const tournamentsPage = new TournamentsPage(page)
     await tournamentsPage.goto()
     const tournamentDate = new Date()
-    try {
-      await tournamentsPage.createTournament(tournamentDate)
-      await tournamentsPage.clickStart(tournamentDate)
-      await page.waitForTimeout(1000)
-    } catch {
-      // Tournament might already exist
-    }
+    tournamentDate.setDate(tournamentDate.getDate() + Math.floor(Math.random() * 365))
+    await tournamentsPage.createTournament(tournamentDate)
+    await tournamentsPage.clickStart(tournamentDate)
+    await tournamentsPage.expectActiveTournament(tournamentDate)
 
     const gamePage = new GamePage(page)
     await gamePage.goto()
 
     // Add some events
-    await gamePage.tapI('Player1')
-    await gamePage.tapI('Player1')
-    await gamePage.tapX('Player2')
+    await gamePage.tapI(player1Nickname)
+    await gamePage.tapI(player1Nickname)
+    await gamePage.tapX(player2Nickname)
 
     // Verify events are recorded
-    await gamePage.expectEventCount('Player1', 2, 0)
-    await gamePage.expectEventCount('Player2', 0, 1)
+    await gamePage.expectEventCount(player1Nickname, 2, 0)
+    await gamePage.expectEventCount(player2Nickname, 0, 1)
 
     // Clear events with confirmation
     page.once('dialog', async dialog => {
@@ -156,24 +148,30 @@ test.describe('Game Recording Flow', () => {
   })
 
   test('should cancel confirmation and return to game page', async ({ page }) => {
-    // Setup: Ensure active tournament exists
+    // Setup: Ensure active tournament exists with unique identifiers
+    const timestamp = Date.now() + Math.random()
+    const player1Nickname = `Player1-${timestamp}`
+    const player2Nickname = `Player2-${timestamp}`
+
+    const playersPage = new PlayersPage(page)
+    await playersPage.goto()
+    await playersPage.createPlayer(`Test Player One ${timestamp}`, player1Nickname)
+    await playersPage.createPlayer(`Test Player Two ${timestamp}`, player2Nickname)
+
     const tournamentsPage = new TournamentsPage(page)
     await tournamentsPage.goto()
     const tournamentDate = new Date()
-    try {
-      await tournamentsPage.createTournament(tournamentDate)
-      await tournamentsPage.clickStart(tournamentDate)
-      await page.waitForTimeout(1000)
-    } catch {
-      // Tournament might already exist
-    }
+    tournamentDate.setDate(tournamentDate.getDate() + Math.floor(Math.random() * 365))
+    await tournamentsPage.createTournament(tournamentDate)
+    await tournamentsPage.clickStart(tournamentDate)
+    await tournamentsPage.expectActiveTournament(tournamentDate)
 
     const gamePage = new GamePage(page)
     await gamePage.goto()
 
     // Add events
-    await gamePage.tapI('Player1')
-    await gamePage.tapX('Player2')
+    await gamePage.tapI(player1Nickname)
+    await gamePage.tapX(player2Nickname)
 
     // Click Save to go to confirmation
     await gamePage.clickSave()
@@ -187,44 +185,50 @@ test.describe('Game Recording Flow', () => {
     await expect(page).toHaveURL('/game')
 
     // Events should still be there
-    await gamePage.expectEventCount('Player1', 1, 0)
-    await gamePage.expectEventCount('Player2', 0, 1)
+    await gamePage.expectEventCount(player1Nickname, 1, 0)
+    await gamePage.expectEventCount(player2Nickname, 0, 1)
   })
 
   test('should display correct scores with clusters', async ({ page }) => {
-    // Setup: Ensure active tournament and players exist
+    // Setup: Ensure active tournament and players exist with unique identifiers
+    const timestamp = Date.now() + Math.random()
+    const player1Nickname = `Player1-${timestamp}`
+    const player2Nickname = `Player2-${timestamp}`
+
+    const playersPage = new PlayersPage(page)
+    await playersPage.goto()
+    await playersPage.createPlayer(`Test Player One ${timestamp}`, player1Nickname)
+    await playersPage.createPlayer(`Test Player Two ${timestamp}`, player2Nickname)
+
     const tournamentsPage = new TournamentsPage(page)
     await tournamentsPage.goto()
     const tournamentDate = new Date()
-    try {
-      await tournamentsPage.createTournament(tournamentDate)
-      await tournamentsPage.clickStart(tournamentDate)
-      await page.waitForTimeout(1000)
-    } catch {
-      // Tournament might already exist
-    }
+    tournamentDate.setDate(tournamentDate.getDate() + Math.floor(Math.random() * 365))
+    await tournamentsPage.createTournament(tournamentDate)
+    await tournamentsPage.clickStart(tournamentDate)
+    await tournamentsPage.expectActiveTournament(tournamentDate)
 
     const gamePage = new GamePage(page)
     await gamePage.goto()
 
     // Player1: 4 I's = 1 cluster, net +1
-    await gamePage.tapI('Player1')
-    await gamePage.tapI('Player1')
-    await gamePage.tapI('Player1')
-    await gamePage.tapI('Player1')
+    await gamePage.tapI(player1Nickname)
+    await gamePage.tapI(player1Nickname)
+    await gamePage.tapI(player1Nickname)
+    await gamePage.tapI(player1Nickname)
 
     // Verify net score is +1 (1 cluster)
-    await gamePage.expectNetScore('Player1', 1)
-    await gamePage.expectRemainder('Player1', 0, 0) // No remainder after 4
+    await gamePage.expectNetScore(player1Nickname, 1)
+    await gamePage.expectRemainder(player1Nickname, 0, 0) // No remainder after 4
 
     // Player2: 5 X's = 1 cluster + 1 remainder, net -1
-    await gamePage.tapX('Player2')
-    await gamePage.tapX('Player2')
-    await gamePage.tapX('Player2')
-    await gamePage.tapX('Player2')
-    await gamePage.tapX('Player2')
+    await gamePage.tapX(player2Nickname)
+    await gamePage.tapX(player2Nickname)
+    await gamePage.tapX(player2Nickname)
+    await gamePage.tapX(player2Nickname)
+    await gamePage.tapX(player2Nickname)
 
-    await gamePage.expectNetScore('Player2', -1)
-    await gamePage.expectRemainder('Player2', 0, 1) // 1 remainder after 5
+    await gamePage.expectNetScore(player2Nickname, -1)
+    await gamePage.expectRemainder(player2Nickname, 0, 1) // 1 remainder after 5
   })
 })

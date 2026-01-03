@@ -58,12 +58,7 @@ test.describe('Player Management', () => {
     await playersPage.createPlayer(name, nickname)
     await playersPage.expectPlayer(name, nickname)
 
-    // Delete the player
-    page.once('dialog', async dialog => {
-      expect(dialog.type()).toBe('confirm')
-      expect(dialog.message()).toContain('Delete')
-      await dialog.accept()
-    })
+    // Delete the player (dialog handling is done inside deletePlayer)
     await playersPage.deletePlayer(nickname)
 
     // Verify player is removed

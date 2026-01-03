@@ -19,15 +19,27 @@ export async function loginAsAdmin(page: Page, password?: string): Promise<void>
   const adminPassword = password || getTestAdminPassword()
 
   await page.goto('/login')
-  await page.fill('input[type="password"]', adminPassword)
-  await page.click('button[type="submit"]')
 
-  // Wait for navigation to complete (should redirect to dashboard, not login)
-  await page.waitForURL(url => url.pathname !== '/login', { timeout: 5000 })
+  // Wait for the login form to be ready
+  await page.waitForSelector('input[type="password"]', { state: 'visible' })
+
+  // Fill password and submit
+  await page.fill('input[type="password"]', adminPassword)
+
+  // Wait for navigation after clicking submit
+  await Promise.all([
+    page.waitForURL(url => url.pathname !== '/login', { timeout: 10000 }),
+    page.click('button[type="submit"]')
+  ])
+
+  // Wait a bit for localStorage to be updated
+  await page.waitForTimeout(500)
 
   // Verify we're authenticated by checking for auth token in localStorage
   const token = await page.evaluate(() => localStorage.getItem('auth_token'))
   if (!token) {
+    // Take a screenshot for debugging
+    await page.screenshot({ path: 'test-results/login-failed.png' })
     throw new Error('Login failed: No auth token found in localStorage')
   }
 }

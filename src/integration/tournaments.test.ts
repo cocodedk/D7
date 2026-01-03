@@ -12,41 +12,10 @@ import { handler as resultsHandler } from '../../netlify/functions/tournaments/[
 describe('Tournaments Integration Tests', () => {
   let authToken: string
 
-  beforeEach(async () => {
-    // CRITICAL: Ensure handlers use test database
-    // Delete NETLIFY_DATABASE_URL first (it takes priority), then set DATABASE_URL
-    delete process.env.NETLIFY_DATABASE_URL
-    process.env.DATABASE_URL = process.env.TEST_DATABASE_URL || process.env.DATABASE_URL
-
-    // Reset the pool so it recreates with correct DATABASE_URL
-    // getDbPool() now checks TEST_DATABASE_URL in test mode automatically
-    try {
-      const { resetDbPool, getDbPool, getPoolConnectionString } = await import('../../netlify/functions/_shared/db')
-
-      // Reset any existing pool
-      await resetDbPool()
-
-      // Force pool creation to verify it uses TEST_DATABASE_URL
-      const testPool = getDbPool()
-
-      // Verify the pool is using the correct connection string
-      const actualConnectionString = getPoolConnectionString()
-      if (actualConnectionString !== process.env.TEST_DATABASE_URL) {
-        throw new Error(
-          `Pool verification failed in beforeEach: Expected TEST_DATABASE_URL, ` +
-          `but pool is using: ${actualConnectionString?.substring(0, 30)}...`
-        )
-      }
-    } catch (error) {
-      // Fail fast if pool setup is wrong
-      throw new Error(`Failed to setup test database pool: ${error}`)
-    }
-
-    await resetTestDatabase()
-
-    // Get auth token
+  beforeAll(async () => {
+    // Get auth token once per test file (cached for all tests)
     const adminPassword = getTestAdminPassword()
-      const loginResponse = await invokeFunction(
+    const loginResponse = await invokeFunction(
       (await import('../../netlify/functions/auth-login')).handler,
       {
         httpMethod: 'POST',
@@ -55,6 +24,15 @@ describe('Tournaments Integration Tests', () => {
       }
     )
     authToken = extractToken(loginResponse) || ''
+  })
+
+  beforeEach(async () => {
+    // CRITICAL: Ensure handlers use test database
+    // Delete NETLIFY_DATABASE_URL first (it takes priority), then set DATABASE_URL
+    delete process.env.NETLIFY_DATABASE_URL
+    process.env.DATABASE_URL = process.env.TEST_DATABASE_URL || process.env.DATABASE_URL
+
+    await resetTestDatabase()
   })
 
   afterEach(async () => {
@@ -169,8 +147,6 @@ describe('Tournaments Integration Tests', () => {
     it('should return active tournament', async () => {
       const tournamentId = await createTestTournament({ date: '2024-01-15', state: 'active' })
 
-      // Small delay to ensure tournament is committed
-      await new Promise(resolve => setTimeout(resolve, 50))
 
       const response = await invokeFunction(activeHandler, {
         httpMethod: 'GET',
@@ -204,8 +180,6 @@ describe('Tournaments Integration Tests', () => {
         state: 'draft',
       })
 
-      // Small delay to ensure tournament is committed
-      await new Promise(resolve => setTimeout(resolve, 50))
 
       const response = await invokeFunction(startHandler, {
         httpMethod: 'PUT',
@@ -268,8 +242,6 @@ describe('Tournaments Integration Tests', () => {
         state: 'active',
       })
 
-      // Small delay to ensure tournament is committed
-      await new Promise(resolve => setTimeout(resolve, 50))
 
       const response = await invokeFunction(closeHandler, {
         httpMethod: 'PUT',
@@ -289,8 +261,6 @@ describe('Tournaments Integration Tests', () => {
         state: 'active',
       })
 
-      // Small delay to ensure tournament is committed
-      await new Promise(resolve => setTimeout(resolve, 50))
 
       const response = await invokeFunction(closeHandler, {
         httpMethod: 'PUT',

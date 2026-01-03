@@ -15,27 +15,8 @@ describe('Transaction Integrity E2E Tests', () => {
   let tournamentId: string
   let playerId: string
 
-  beforeEach(async () => {
-    delete process.env.NETLIFY_DATABASE_URL
-    process.env.DATABASE_URL = process.env.TEST_DATABASE_URL || process.env.DATABASE_URL
-
-    try {
-      const { resetDbPool, getDbPool, getPoolConnectionString } = await import('../../netlify/functions/_shared/db')
-      await resetDbPool()
-      const testPool = getDbPool()
-      const actualConnectionString = getPoolConnectionString()
-      if (actualConnectionString !== process.env.TEST_DATABASE_URL) {
-        throw new Error(
-          `Pool verification failed: Expected TEST_DATABASE_URL, ` +
-          `but pool is using: ${actualConnectionString?.substring(0, 30)}...`
-        )
-      }
-    } catch (error) {
-      throw new Error(`Failed to setup test database pool: ${error}`)
-    }
-
-    await resetTestDatabase()
-
+  beforeAll(async () => {
+    // Get auth token once per test file (cached for all tests)
     const adminPassword = getTestAdminPassword()
     const loginResponse = await invokeFunction(
       (await import('../../netlify/functions/auth-login')).handler,
@@ -46,10 +27,16 @@ describe('Transaction Integrity E2E Tests', () => {
       }
     )
     authToken = extractToken(loginResponse) || ''
+  })
+
+  beforeEach(async () => {
+    delete process.env.NETLIFY_DATABASE_URL
+    process.env.DATABASE_URL = process.env.TEST_DATABASE_URL || process.env.DATABASE_URL
+
+    await resetTestDatabase()
 
     tournamentId = await createTestTournament({ date: '2024-01-15', state: 'active' })
     playerId = await createTestPlayer({ name: 'Test Player', nickname: 'TP' })
-    await new Promise(resolve => setTimeout(resolve, 50))
   })
 
   afterEach(async () => {
@@ -79,7 +66,6 @@ describe('Transaction Integrity E2E Tests', () => {
     const gameId = (createResponse.body as { id?: string }).id!
     expect(gameId).toBeDefined()
 
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     // Verify game exists
     const pool = (await import('./db-test-setup')).getTestDbPool()
@@ -118,7 +104,6 @@ describe('Transaction Integrity E2E Tests', () => {
     assertSuccess(createResponse)
     const gameId = (createResponse.body as { id?: string }).id!
 
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     // Retrieve game
     const getResponse = await invokeFunction(gameHandler, {
@@ -159,7 +144,6 @@ describe('Transaction Integrity E2E Tests', () => {
     assertSuccess(createResponse)
     const gameId = (createResponse.body as { id?: string }).id!
 
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     // Verify all events were created
     const pool = (await import('./db-test-setup')).getTestDbPool()
@@ -188,7 +172,6 @@ describe('Transaction Integrity E2E Tests', () => {
     assertSuccess(createResponse)
     const gameId = (createResponse.body as { id?: string }).id!
 
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     // Verify foreign key relationship
     const pool = (await import('./db-test-setup')).getTestDbPool()
@@ -226,7 +209,6 @@ describe('Transaction Integrity E2E Tests', () => {
     assertSuccess(createResponse)
     const gameId = (createResponse.body as { id?: string }).id!
 
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     // Delete game
     const deleteResponse = await invokeFunction(gameHandler, {
@@ -237,7 +219,6 @@ describe('Transaction Integrity E2E Tests', () => {
 
     assertSuccess(deleteResponse)
 
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     // Verify game is deleted
     const pool = (await import('./db-test-setup')).getTestDbPool()

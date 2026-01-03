@@ -27,122 +27,169 @@ test.describe('Game Recording Edge Cases', () => {
   })
 
   test('should allow undo within 60 seconds', async ({ page }) => {
-    // Setup: Create players and active tournament
-    const playersPage = new PlayersPage(page)
-    await playersPage.goto()
+    // Track created resources for cleanup
+    const createdPlayerNicknames: string[] = []
+    const createdTournamentDates: Date[] = []
 
-    // Create test players if they don't exist
-    const timestamp = Date.now()
     try {
-      await playersPage.createPlayer(`Test Player ${timestamp}`, `Player${timestamp}`)
-    } catch {
-      // Player might already exist
-    }
+      // Setup: Create players and active tournament
+      const playersPage = new PlayersPage(page)
+      await playersPage.goto()
 
-    // Create and start tournament
-    const tournamentsPage = new TournamentsPage(page)
-    await tournamentsPage.goto()
-    const tournamentDate = new Date()
-    try {
+      // Create test player with unique identifier
+      const timestamp = Date.now() + Math.random()
+      const playerNickname = `Player${timestamp}`
+      await playersPage.createPlayer(`Test Player ${timestamp}`, playerNickname)
+      createdPlayerNicknames.push(playerNickname)
+
+      // Create and start tournament with unique date
+      const tournamentsPage = new TournamentsPage(page)
+      await tournamentsPage.goto()
+      const tournamentDate = new Date()
+      tournamentDate.setDate(tournamentDate.getDate() + Math.floor(Math.random() * 365))
       await tournamentsPage.createTournament(tournamentDate)
       await tournamentsPage.clickStart(tournamentDate)
-      await page.waitForTimeout(1000)
-    } catch {
-      // Tournament might already exist
+      await tournamentsPage.expectActiveTournament(tournamentDate)
+      createdTournamentDates.push(tournamentDate)
+
+      // Record a game
+      const gamePage = new GamePage(page)
+      await gamePage.goto()
+
+      // Add some events
+      await gamePage.tapI(playerNickname)
+      await gamePage.tapI(playerNickname)
+
+      // Save the game
+      await gamePage.clickSave()
+
+      const confirmationScreen = new ConfirmationScreen(page)
+      await confirmationScreen.expectVisible()
+      await confirmationScreen.clickConfirmAndSave()
+
+      // Should redirect to dashboard
+      await expect(page).toHaveURL('/')
+      const dashboardPage = new DashboardPage(page)
+      await dashboardPage.goto()
+
+      // Verify undo notification appears
+      await dashboardPage.expectUndoNotification()
+
+      // Click undo
+      await dashboardPage.clickUndo()
+
+      // Wait for page to reload and undo notification to disappear
+      await page.waitForLoadState('networkidle')
+      await dashboardPage.expectUndoNotificationGone()
+      await expect(page).toHaveURL('/')
+    } finally {
+      // Cleanup: Delete created players and close tournaments
+      const playersPage = new PlayersPage(page)
+      const tournamentsPage = new TournamentsPage(page)
+
+      for (const nickname of createdPlayerNicknames) {
+        try {
+          await playersPage.goto()
+          await playersPage.deletePlayer(nickname)
+        } catch (error) {
+          // Ignore cleanup errors
+        }
+      }
+
+      for (const date of createdTournamentDates) {
+        try {
+          await tournamentsPage.goto()
+          await tournamentsPage.confirmClose(date)
+        } catch (error) {
+          // Ignore cleanup errors
+        }
+      }
     }
-
-    // Record a game
-    const gamePage = new GamePage(page)
-    await gamePage.goto()
-
-    // Add some events
-    await gamePage.tapI(`Player${timestamp}`)
-    await gamePage.tapI(`Player${timestamp}`)
-
-    // Save the game
-    await gamePage.clickSave()
-
-    const confirmationScreen = new ConfirmationScreen(page)
-    await confirmationScreen.expectVisible()
-    await confirmationScreen.clickConfirmAndSave()
-
-    // Should redirect to dashboard
-    await expect(page).toHaveURL('/')
-    const dashboardPage = new DashboardPage(page)
-    await dashboardPage.goto()
-
-    // Verify undo notification appears
-    await dashboardPage.expectUndoNotification()
-
-    // Click undo
-    await dashboardPage.clickUndo()
-
-    // Should refresh and notification should be gone
-    await page.waitForTimeout(1000)
-    // The page should reload after undo, so we need to wait for it
-    await expect(page).toHaveURL('/')
   })
 
   test('should handle game recording with multiple players', async ({ page }) => {
-    // Setup: Create multiple players and active tournament
-    const playersPage = new PlayersPage(page)
-    await playersPage.goto()
+    // Track created resources for cleanup
+    const createdPlayerNicknames: string[] = []
+    const createdTournamentDates: Date[] = []
 
-    const timestamp = Date.now()
-    const players = [
-      { name: `Player A ${timestamp}`, nickname: `PlayerA${timestamp}` },
-      { name: `Player B ${timestamp}`, nickname: `PlayerB${timestamp}` },
-      { name: `Player C ${timestamp}`, nickname: `PlayerC${timestamp}` },
-    ]
-
-    for (const player of players) {
-      try {
-        await playersPage.createPlayer(player.name, player.nickname)
-      } catch {
-        // Player might already exist
-      }
-    }
-
-    // Create and start tournament
-    const tournamentsPage = new TournamentsPage(page)
-    await tournamentsPage.goto()
-    const tournamentDate = new Date()
     try {
+      // Setup: Create multiple players and active tournament
+      const playersPage = new PlayersPage(page)
+      await playersPage.goto()
+
+      const timestamp = Date.now() + Math.random()
+      const players = [
+        { name: `Player A ${timestamp}`, nickname: `PlayerA${timestamp}` },
+        { name: `Player B ${timestamp}`, nickname: `PlayerB${timestamp}` },
+        { name: `Player C ${timestamp}`, nickname: `PlayerC${timestamp}` },
+      ]
+
+      for (const player of players) {
+        await playersPage.createPlayer(player.name, player.nickname)
+        createdPlayerNicknames.push(player.nickname)
+      }
+
+      // Create and start tournament with unique date
+      const tournamentsPage = new TournamentsPage(page)
+      await tournamentsPage.goto()
+      const tournamentDate = new Date()
+      tournamentDate.setDate(tournamentDate.getDate() + Math.floor(Math.random() * 365))
       await tournamentsPage.createTournament(tournamentDate)
       await tournamentsPage.clickStart(tournamentDate)
-      await page.waitForTimeout(1000)
-    } catch {
-      // Tournament might already exist
+      await tournamentsPage.expectActiveTournament(tournamentDate)
+      createdTournamentDates.push(tournamentDate)
+
+      // Record game with multiple players
+      const gamePage = new GamePage(page)
+      await gamePage.goto()
+
+      // Add events for each player
+      await gamePage.tapI(players[0].nickname)
+      await gamePage.tapI(players[0].nickname)
+      await gamePage.tapX(players[1].nickname)
+      await gamePage.tapI(players[2].nickname)
+      await gamePage.tapI(players[2].nickname)
+      await gamePage.tapI(players[2].nickname)
+
+      // Verify all events are recorded
+      await gamePage.expectEventCount(players[0].nickname, 2, 0)
+      await gamePage.expectEventCount(players[1].nickname, 0, 1)
+      await gamePage.expectEventCount(players[2].nickname, 3, 0)
+
+      // Save and verify confirmation shows all players
+      await gamePage.clickSave()
+
+      const confirmationScreen = new ConfirmationScreen(page)
+      await confirmationScreen.expectVisible()
+      await confirmationScreen.expectPlayerSummary(players[0].nickname, 2, 0)
+      await confirmationScreen.expectPlayerSummary(players[1].nickname, 0, 1)
+      await confirmationScreen.expectPlayerSummary(players[2].nickname, 3, 0)
+
+      // Confirm and save
+      await confirmationScreen.clickConfirmAndSave()
+      await expect(page).toHaveURL('/')
+    } finally {
+      // Cleanup: Delete created players and close tournaments
+      const playersPage = new PlayersPage(page)
+      const tournamentsPage = new TournamentsPage(page)
+
+      for (const nickname of createdPlayerNicknames) {
+        try {
+          await playersPage.goto()
+          await playersPage.deletePlayer(nickname)
+        } catch (error) {
+          // Ignore cleanup errors
+        }
+      }
+
+      for (const date of createdTournamentDates) {
+        try {
+          await tournamentsPage.goto()
+          await tournamentsPage.confirmClose(date)
+        } catch (error) {
+          // Ignore cleanup errors
+        }
+      }
     }
-
-    // Record game with multiple players
-    const gamePage = new GamePage(page)
-    await gamePage.goto()
-
-    // Add events for each player
-    await gamePage.tapI(players[0].nickname)
-    await gamePage.tapI(players[0].nickname)
-    await gamePage.tapX(players[1].nickname)
-    await gamePage.tapI(players[2].nickname)
-    await gamePage.tapI(players[2].nickname)
-    await gamePage.tapI(players[2].nickname)
-
-    // Verify all events are recorded
-    await gamePage.expectEventCount(players[0].nickname, 2, 0)
-    await gamePage.expectEventCount(players[1].nickname, 0, 1)
-    await gamePage.expectEventCount(players[2].nickname, 3, 0)
-
-    // Save and verify confirmation shows all players
-    await gamePage.clickSave()
-
-    const confirmationScreen = new ConfirmationScreen(page)
-    await confirmationScreen.expectVisible()
-    await confirmationScreen.expectPlayerSummary(players[0].nickname, 2, 0)
-    await confirmationScreen.expectPlayerSummary(players[1].nickname, 0, 1)
-    await confirmationScreen.expectPlayerSummary(players[2].nickname, 3, 0)
-
-    // Confirm and save
-    await confirmationScreen.clickConfirmAndSave()
-    await expect(page).toHaveURL('/')
   })
 })

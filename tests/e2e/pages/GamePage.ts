@@ -64,7 +64,7 @@ export class GamePage {
   }
 
   async confirmClear() {
-    this.page.on('dialog', async dialog => {
+    this.page.once('dialog', async dialog => {
       expect(dialog.type()).toBe('confirm')
       await dialog.accept()
     })
@@ -75,9 +75,20 @@ export class GamePage {
     // After clearing, all event counts should be 0
     const saveButton = this.page.locator('button:has-text("Save Game")')
     const buttonText = await saveButton.textContent()
+
+    // Assert that the pattern exists - fail if it doesn't
+    expect(buttonText).toMatch(/\((\d+)\)/)
+
     const match = buttonText?.match(/\((\d+)\)/)
-    if (match) {
-      expect(parseInt(match[1])).toBe(0)
+    // This should never be null due to the expect above, but TypeScript requires the check
+    if (!match) {
+      throw new Error(`Expected button text to contain event count pattern, but got: ${buttonText}`)
     }
+
+    // Assert the captured number is 0
+    expect(parseInt(match[1])).toBe(0)
+
+    // Additionally assert the button is disabled when events are cleared
+    await this.expectSaveButtonDisabled()
   }
 }

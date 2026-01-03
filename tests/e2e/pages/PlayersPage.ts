@@ -5,6 +5,8 @@ export class PlayersPage {
 
   async goto() {
     await this.page.goto('/players')
+    // Wait for the page to be ready
+    await this.page.waitForSelector('button:has-text("Add Player")', { state: 'visible' })
   }
 
   async clickAddPlayer() {
@@ -28,8 +30,8 @@ export class PlayersPage {
     await this.fillName(name)
     await this.fillNickname(nickname)
     await this.clickSave()
-    // Wait for form to close
-    await this.page.waitForSelector('input[id="name"]', { state: 'hidden', timeout: 5000 })
+    // Wait for form to close by waiting for "Add Player" button to be visible again
+    await this.page.waitForSelector('button:has-text("Add Player")', { state: 'visible', timeout: 5000 })
   }
 
   async expectPlayer(name: string, nickname: string) {
@@ -48,8 +50,10 @@ export class PlayersPage {
     await this.fillName(newName)
     await this.fillNickname(newNickname)
     await this.clickSave()
-    // Wait for form to close
-    await this.page.waitForSelector('input[id="name"]', { state: 'hidden', timeout: 5000 })
+    // Wait for form to close by waiting for "Add Player" button to be visible again
+    await this.page.waitForSelector('button:has-text("Add Player")', { state: 'visible', timeout: 5000 })
+    // Wait a bit for the player list to update
+    await this.page.waitForTimeout(500)
   }
 
   async clickDelete(playerNickname: string) {
@@ -57,18 +61,21 @@ export class PlayersPage {
     await playerCard.locator('button:has-text("Delete")').click()
   }
 
-  async confirmDelete() {
-    this.page.on('dialog', async dialog => {
+  async deletePlayer(playerNickname: string) {
+    // Set up dialog handler before clicking
+    this.page.once('dialog', async dialog => {
       expect(dialog.type()).toBe('confirm')
+      expect(dialog.message()).toContain('Delete')
       await dialog.accept()
     })
-  }
 
-  async deletePlayer(playerNickname: string) {
+    // Find the player card to wait for its removal
+    const playerCard = this.page.locator('.card').filter({ hasText: playerNickname }).first()
+
     await this.clickDelete(playerNickname)
-    await this.confirmDelete()
-    // Wait for player to be removed
-    await this.page.waitForTimeout(500)
+
+    // Wait for the player card to be removed from the DOM
+    await playerCard.waitFor({ state: 'detached', timeout: 10000 })
   }
 
   async expectPlayerNotVisible(nickname: string) {

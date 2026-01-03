@@ -15,10 +15,8 @@ config({ path: resolve(process.cwd(), '.env') })
 
 function getConnectionString() {
   // Match the same logic as db.ts
-  const isTestMode = !!process.env.TEST_DATABASE_URL
-  const connectionString = isTestMode
-    ? (process.env.TEST_DATABASE_URL || process.env.DATABASE_URL)
-    : (process.env.NETLIFY_DATABASE_URL || process.env.DATABASE_URL)
+  // Use NETLIFY_DATABASE_URL (Netlify) or DATABASE_URL (local/tests)
+  const connectionString = process.env.NETLIFY_DATABASE_URL || process.env.DATABASE_URL
 
   if (!connectionString) {
     throw new Error(

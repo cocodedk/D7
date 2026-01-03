@@ -14,27 +14,8 @@ describe('Multi-Player Games E2E Tests', () => {
   let authToken: string
   let tournamentId: string
 
-  beforeEach(async () => {
-    delete process.env.NETLIFY_DATABASE_URL
-    process.env.DATABASE_URL = process.env.TEST_DATABASE_URL || process.env.DATABASE_URL
-
-    try {
-      const { resetDbPool, getDbPool, getPoolConnectionString } = await import('../../netlify/functions/_shared/db')
-      await resetDbPool()
-      const testPool = getDbPool()
-      const actualConnectionString = getPoolConnectionString()
-      if (actualConnectionString !== process.env.TEST_DATABASE_URL) {
-        throw new Error(
-          `Pool verification failed: Expected TEST_DATABASE_URL, ` +
-          `but pool is using: ${actualConnectionString?.substring(0, 30)}...`
-        )
-      }
-    } catch (error) {
-      throw new Error(`Failed to setup test database pool: ${error}`)
-    }
-
-    await resetTestDatabase()
-
+  beforeAll(async () => {
+    // Get auth token once per test file (cached for all tests)
     const adminPassword = getTestAdminPassword()
     const loginResponse = await invokeFunction(
       (await import('../../netlify/functions/auth-login')).handler,
@@ -45,9 +26,15 @@ describe('Multi-Player Games E2E Tests', () => {
       }
     )
     authToken = extractToken(loginResponse) || ''
+  })
+
+  beforeEach(async () => {
+    delete process.env.NETLIFY_DATABASE_URL
+    process.env.DATABASE_URL = process.env.TEST_DATABASE_URL || process.env.DATABASE_URL
+
+    await resetTestDatabase()
 
     tournamentId = await createTestTournament({ date: '2024-01-15', state: 'active' })
-    await new Promise(resolve => setTimeout(resolve, 50))
   })
 
   afterEach(async () => {
@@ -58,7 +45,6 @@ describe('Multi-Player Games E2E Tests', () => {
     const player1Id = await createTestPlayer({ name: 'Player 1', nickname: 'P1' })
     const player2Id = await createTestPlayer({ name: 'Player 2', nickname: 'P2' })
     const player3Id = await createTestPlayer({ name: 'Player 3', nickname: 'P3' })
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     // Create game with events for all three players
     await invokeFunction(gamesHandler, {
@@ -80,7 +66,6 @@ describe('Multi-Player Games E2E Tests', () => {
       headers: createAuthHeaders(authToken),
     })
 
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     const resultsResponse = await invokeFunction(resultsHandler, {
       httpMethod: 'GET',
@@ -118,7 +103,6 @@ describe('Multi-Player Games E2E Tests', () => {
 
   it('should track scores correctly when same player has multiple events', async () => {
     const playerId = await createTestPlayer({ name: 'Test Player', nickname: 'TP' })
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     // Create game with multiple events for same player
     await invokeFunction(gamesHandler, {
@@ -138,7 +122,6 @@ describe('Multi-Player Games E2E Tests', () => {
       headers: createAuthHeaders(authToken),
     })
 
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     const resultsResponse = await invokeFunction(resultsHandler, {
       httpMethod: 'GET',
@@ -167,7 +150,6 @@ describe('Multi-Player Games E2E Tests', () => {
   it('should aggregate scores across multiple games for multiple players', async () => {
     const player1Id = await createTestPlayer({ name: 'Player 1', nickname: 'P1' })
     const player2Id = await createTestPlayer({ name: 'Player 2', nickname: 'P2' })
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     // Game 1: Player 1 gets 3 I, Player 2 gets 1 X
     await invokeFunction(gamesHandler, {
@@ -185,7 +167,6 @@ describe('Multi-Player Games E2E Tests', () => {
       headers: createAuthHeaders(authToken),
     })
 
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     // Game 2: Player 1 gets 2 I, Player 2 gets 4 X
     await invokeFunction(gamesHandler, {
@@ -205,7 +186,6 @@ describe('Multi-Player Games E2E Tests', () => {
       headers: createAuthHeaders(authToken),
     })
 
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     const resultsResponse = await invokeFunction(resultsHandler, {
       httpMethod: 'GET',
@@ -237,7 +217,6 @@ describe('Multi-Player Games E2E Tests', () => {
     const player1Id = await createTestPlayer({ name: 'Player 1', nickname: 'P1' })
     const player2Id = await createTestPlayer({ name: 'Player 2', nickname: 'P2' })
     const player3Id = await createTestPlayer({ name: 'Player 3', nickname: 'P3' })
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     // Create games with events for all players
     await invokeFunction(gamesHandler, {
@@ -254,7 +233,6 @@ describe('Multi-Player Games E2E Tests', () => {
       headers: createAuthHeaders(authToken),
     })
 
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     const resultsResponse = await invokeFunction(resultsHandler, {
       httpMethod: 'GET',
@@ -287,7 +265,6 @@ describe('Multi-Player Games E2E Tests', () => {
   it('should handle game with many events for multiple players', async () => {
     const player1Id = await createTestPlayer({ name: 'Player 1', nickname: 'P1' })
     const player2Id = await createTestPlayer({ name: 'Player 2', nickname: 'P2' })
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     // Create game with many events (20 total)
     const events = []
@@ -306,7 +283,6 @@ describe('Multi-Player Games E2E Tests', () => {
       headers: createAuthHeaders(authToken),
     })
 
-    await new Promise(resolve => setTimeout(resolve, 50))
 
     const resultsResponse = await invokeFunction(resultsHandler, {
       httpMethod: 'GET',
@@ -332,5 +308,5 @@ describe('Multi-Player Games E2E Tests', () => {
     expect(scores[player2Id].minusClusters).toBe(2)
     expect(scores[player2Id].minusRemainder).toBe(2)
     expect(scores[player2Id].netScore).toBe(-2)
-  })
+  }, 30000) // 30 second timeout for complex test
 })

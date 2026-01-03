@@ -5,13 +5,9 @@ let poolConnectionString: string | null = null
 
 export function getDbPool(): Pool {
   if (!pool) {
-    // In test mode, prioritize TEST_DATABASE_URL to ensure handlers use test database
-    // This is critical for integration tests where test data is created in test DB
-    // but handlers need to query from the same database
-    const isTestMode = !!process.env.TEST_DATABASE_URL
-    const connectionString = isTestMode
-      ? (process.env.TEST_DATABASE_URL || process.env.DATABASE_URL)
-      : (process.env.NETLIFY_DATABASE_URL || process.env.DATABASE_URL)
+    // Use NETLIFY_DATABASE_URL (Netlify) or DATABASE_URL (local/tests)
+    // Tests set DATABASE_URL = TEST_DATABASE_URL in their setup
+    const connectionString = process.env.NETLIFY_DATABASE_URL || process.env.DATABASE_URL
 
     if (!connectionString) {
       throw new Error(
@@ -19,25 +15,18 @@ export function getDbPool(): Pool {
       )
     }
 
-    // Verify in test mode that we're using TEST_DATABASE_URL
-    if (isTestMode && connectionString !== process.env.TEST_DATABASE_URL) {
-      throw new Error(
-        `In test mode, getDbPool() must use TEST_DATABASE_URL. ` +
-        `Got: ${connectionString?.substring(0, 20)}..., ` +
-        `Expected: ${process.env.TEST_DATABASE_URL?.substring(0, 20)}...`
-      )
-    }
-
     poolConnectionString = connectionString
+    // Use larger pool and longer timeout for tests
+    const isTest = !!process.env.TEST_DATABASE_URL || process.env.NODE_ENV === 'test'
     pool = new Pool({
       connectionString,
       ssl: {
         rejectUnauthorized: false,
       },
-      // Connection pool settings for serverless
-      max: 1, // Limit connections per function instance
+      // Connection pool settings
+      max: isTest ? 5 : 1, // More connections for tests, limit for serverless
       idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 2000,
+      connectionTimeoutMillis: 5000, // Same timeout for tests and production
     })
   }
 

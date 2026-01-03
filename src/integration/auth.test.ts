@@ -12,15 +12,6 @@ describe('Authentication Integration Tests', () => {
     delete process.env.NETLIFY_DATABASE_URL
     process.env.DATABASE_URL = process.env.TEST_DATABASE_URL || process.env.DATABASE_URL
 
-    // Reset the pool so it recreates with correct DATABASE_URL
-    // getDbPool() now checks TEST_DATABASE_URL in test mode automatically
-    try {
-      const { resetDbPool } = await import('../../netlify/functions/_shared/db')
-      await resetDbPool()
-    } catch {
-      // Ignore if resetDbPool doesn't exist
-    }
-
     await resetTestDatabase()
   })
 
