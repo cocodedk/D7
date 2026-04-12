@@ -1,0 +1,38 @@
+# D7 — Hafte Kasif Tournament Tracker
+
+> Web app for tracking bi-weekly Hafte Kasif (Bisheori) card game tournaments among a group of friends in Denmark.
+
+## What it does
+
+D7 is a private tournament tracker for the Hafte Kasif card game. It manages player profiles, tournament sessions, scoring rounds, and rankings. The app is mobile-first, supports dark mode, and is used between rounds at the table.
+
+## Key features
+
+- Tournament management with bi-weekly session tracking
+- Player profiles with avatars and cumulative stats
+- Event-sourced scoring with full history
+- Real-time ranking tables
+- Mobile-first UI for quick score entry
+- Dark mode support
+
+## Architecture
+
+- Language: TypeScript
+- Frontend: React 18 + Vite + Tailwind CSS
+- Backend: Netlify Functions (Node.js serverless)
+- Database: PostgreSQL (Neon)
+- Deployment: Netlify (app) + GitHub Pages (public results)
+- Testing: Vitest (unit + integration)
+
+## Repository
+
+- GitHub: https://github.com/cocodedk/D7
+- Public results: https://cocodedk.github.io/D7/
+
+## Author
+
+Babak Bandpey — https://cocode.dk | https://linkedin.com/in/babakbandpey | https://github.com/cocodedk
+
+## License
+
+Apache-2.0

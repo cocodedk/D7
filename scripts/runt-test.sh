@@ -45,7 +45,7 @@ case "$MODE" in
     ;;
   test|*)
     echo -e "${GREEN}Running all tests...${NC}"
-    npm test -- --run
+    npm run test:unit
     ;;
 esac
 
