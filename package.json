@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "@netlify/functions": "^2.4.0",
-    "pg": "^8.11.3",
+    "pg": "^8.20.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.20.0"
@@ -30,7 +30,7 @@
     "@testing-library/react": "^14.1.2",
     "@testing-library/user-event": "^14.5.1",
     "@types/node": "^20.10.0",
-    "@types/pg": "^8.10.9",
+    "@types/pg": "^8.20.0",
     "@types/react": "^18.2.37",
     "@types/react-dom": "^18.2.15",
     "@typescript-eslint/eslint-plugin": "^6.10.0",
