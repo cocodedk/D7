@@ -42,7 +42,7 @@
     "dotenv": "^17.2.3",
     "eslint": "^8.53.0",
     "eslint-plugin-react-hooks": "^4.6.0",
-    "eslint-plugin-react-refresh": "^0.4.4",
+    "eslint-plugin-react-refresh": "^0.5.2",
     "jsdom": "^27.4.0",
     "netlify-cli": "^23.13.0",
     "patch-package": "^8.0.1",
