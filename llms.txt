@@ -27,7 +27,7 @@ D7 is a private tournament tracker for the Hafte Kasif card game. It manages pla
 ## Repository
 
 - GitHub: https://github.com/cocodedk/D7
-- Public results: https://cocodedk.github.io/D7/
+- Public results: https://d7.cocode.dk/
 
 ## Author
 
