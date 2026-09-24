@@ -41,6 +41,10 @@ body {
   padding: 0 2rem;
 }
 
+/* The cocode.dk frame lines up with .container's column. */
+cocode-head, cocode-foot { --cocode-max: 1200px; --cocode-gutter: 32px; }
+@media (max-width: 768px) { cocode-head, cocode-foot { --cocode-gutter: 24px; } }
+
 /* Hero Section */
 .hero {
   position: relative;
@@ -487,43 +491,11 @@ section {
   }
 }
 
-.footer-author {
-  margin-bottom: 1rem;
-  font-size: 1rem;
-}
-
-.footer-author a {
-  color: var(--gold);
-  text-decoration: none;
-  transition: color 0.3s ease;
-}
-
-.footer-author a:hover {
-  color: var(--gold-dark);
-  text-decoration: underline;
-}
-
 .footer-license {
   font-size: 0.9rem;
   opacity: 0.8;
   margin-bottom: 1rem;
   line-height: 1.6;
-}
-
-.footer-links {
-  margin-top: 1.5rem;
-}
-
-.footer-links a {
-  color: var(--gold);
-  text-decoration: none;
-  font-weight: 600;
-  transition: color 0.3s ease;
-}
-
-.footer-links a:hover {
-  color: var(--gold-dark);
-  text-decoration: underline;
 }
 
 /* Responsive Design */
