@@ -93,7 +93,7 @@ const handler: Handler = async (event) => {
 
     if (event.httpMethod === 'DELETE') {
       // DELETE requires authentication - delegate to protected handler
-      const deleteHandler = requireAuth(async (event) => {
+      const deleteHandler = requireAuth(async () => {
         // Check if game was created within last 60 seconds using PostgreSQL's EXTRACT
         // This avoids JavaScript date parsing issues and timezone problems
         const game = await queryOne<{ age_seconds: number }>(

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { invokeFunction } from './function-invoker'
-import { createAuthHeaders, extractToken, assertSuccess, assertError, getTestAdminPassword } from './test-helpers'
+import { createAuthHeaders, extractToken, assertSuccess, assertError, getTestAdminPassword, type ApiPlayerInfo } from './test-helpers'
 import { resetTestDatabase } from './db-test-setup'
 import {
   createTestPlayer,
@@ -26,7 +26,7 @@ describe('Public Results Integration Tests', () => {
 
       await resetDbPool()
 
-      const testPool = getDbPool()
+      getDbPool()
 
       const actualConnectionString = getPoolConnectionString()
       if (actualConnectionString !== process.env.TEST_DATABASE_URL) {
@@ -97,7 +97,7 @@ describe('Public Results Integration Tests', () => {
       })
 
       assertSuccess(response)
-      const results = response.body as Record<string, any>
+      const results = response.body as Record<string, { player: ApiPlayerInfo | null }>
       expect(results[playerId]).toBeDefined()
       expect(results[playerId]).toHaveProperty('player')
       expect(results[playerId].player).toHaveProperty('id', playerId)
@@ -158,7 +158,7 @@ describe('Public Results Integration Tests', () => {
       })
 
       assertSuccess(response)
-      const body = response.body as { year: number; scores: Array<{ playerId: string; player: any }> }
+      const body = response.body as { year: number; scores: Array<{ playerId: string; player: ApiPlayerInfo | null }> }
       expect(body.scores.length).toBeGreaterThan(0)
       const playerScore = body.scores.find((s) => s.playerId === playerId)
       expect(playerScore).toBeDefined()
@@ -231,7 +231,7 @@ describe('Public Results Integration Tests', () => {
       })
 
       assertSuccess(response)
-      const body = response.body as { events: Array<{ playerId: string; player: any }> }
+      const body = response.body as { events: Array<{ playerId: string; player: ApiPlayerInfo | null }> }
       expect(body.events.length).toBeGreaterThan(0)
       const event = body.events[0]
       expect(event).toHaveProperty('player')

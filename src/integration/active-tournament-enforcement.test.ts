@@ -4,7 +4,6 @@ import { createAuthHeaders, extractToken, assertSuccess, assertError, getTestAdm
 import { resetTestDatabase } from './db-test-setup'
 import {
   createTestPlayer,
-  createTestTournament,
   cleanupTestData,
 } from './test-data'
 import { handler as tournamentsHandler } from '../../netlify/functions/tournaments/index'
@@ -23,7 +22,7 @@ describe('Active Tournament Enforcement E2E Tests', () => {
     try {
       const { resetDbPool, getDbPool, getPoolConnectionString } = await import('../../netlify/functions/_shared/db')
       await resetDbPool()
-      const testPool = getDbPool()
+      getDbPool()
       const actualConnectionString = getPoolConnectionString()
       if (actualConnectionString !== process.env.TEST_DATABASE_URL) {
         throw new Error(

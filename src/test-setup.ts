@@ -45,7 +45,7 @@ global.FileReader = class FileReader {
   onload: ((this: FileReader, ev: ProgressEvent<FileReader>) => void) | null = null
   onerror: ((this: FileReader, ev: ProgressEvent<FileReader>) => void) | null = null
 
-  readAsDataURL(file: Blob) {
+  readAsDataURL() {
     setTimeout(() => {
       this.result = `data:image/jpeg;base64,${btoa('mock-image-data')}`
       this.readyState = 2
@@ -78,7 +78,7 @@ global.Image = class Image {
       }
     }, 0)
   }
-} as any
+} as unknown as typeof Image
 
 // Mock HTMLCanvasElement
 HTMLCanvasElement.prototype.getContext = vi.fn().mockReturnValue({

@@ -1,4 +1,15 @@
 /**
+ * Shape of the "player" field the API embeds in score/result responses
+ * (see netlify/functions/tournaments/[id]/results.ts's ScoreWithPlayer).
+ */
+export interface ApiPlayerInfo {
+  id: string
+  name: string
+  nickname: string
+  avatar: string | null
+}
+
+/**
  * Get admin password for tests. Requires ADMIN_PASSWORD env var to be set.
  * Throws error if not set to prevent accidental use of wrong password.
  */

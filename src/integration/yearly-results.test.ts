@@ -20,7 +20,7 @@ describe('Yearly Results Aggregation E2E Tests', () => {
     try {
       const { resetDbPool, getDbPool, getPoolConnectionString } = await import('../../netlify/functions/_shared/db')
       await resetDbPool()
-      const testPool = getDbPool()
+      getDbPool()
       const actualConnectionString = getPoolConnectionString()
       if (actualConnectionString !== process.env.TEST_DATABASE_URL) {
         throw new Error(

@@ -1,4 +1,4 @@
-import { setupTestDatabase, closeTestDatabase } from './db-test-setup'
+import { setupTestDatabase } from './db-test-setup'
 import { config } from 'dotenv'
 import { resolve } from 'path'
 
@@ -47,7 +47,7 @@ export default async function setup(): Promise<void> {
 
     // Force pool creation now to verify it uses correct URL
     // This ensures the pool is created with TEST_DATABASE_URL before any tests run
-    const testPool = getDbPool()
+    getDbPool()
 
     // Verify the pool is using the correct connection string
     const actualConnectionString = getPoolConnectionString()

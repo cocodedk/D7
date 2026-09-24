@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { invokeFunction } from './function-invoker'
-import { createAuthHeaders, extractToken, assertSuccess, assertError, generateNonExistentId, getTestAdminPassword } from './test-helpers'
+import { createAuthHeaders, extractToken, assertSuccess, assertError, generateNonExistentId, getTestAdminPassword, type ApiPlayerInfo } from './test-helpers'
 import { resetTestDatabase } from './db-test-setup'
 import { createTestPlayer, createTestTournament, createTestGame, createTestScoreEvent, cleanupTestData } from './test-data'
 import { handler as tournamentsHandler } from '../../netlify/functions/tournaments/index'
@@ -27,7 +27,7 @@ describe('Tournaments Integration Tests', () => {
       await resetDbPool()
 
       // Force pool creation to verify it uses TEST_DATABASE_URL
-      const testPool = getDbPool()
+      getDbPool()
 
       // Verify the pool is using the correct connection string
       const actualConnectionString = getPoolConnectionString()
@@ -167,7 +167,7 @@ describe('Tournaments Integration Tests', () => {
     })
 
     it('should return active tournament', async () => {
-      const tournamentId = await createTestTournament({ date: '2024-01-15', state: 'active' })
+      await createTestTournament({ date: '2024-01-15', state: 'active' })
 
       // Small delay to ensure tournament is committed
       await new Promise(resolve => setTimeout(resolve, 50))
@@ -219,7 +219,7 @@ describe('Tournaments Integration Tests', () => {
     })
 
     it('should return 400 if another tournament is active', async () => {
-      const activeId = await createTestTournament({ date: '2024-01-15', state: 'active' })
+      await createTestTournament({ date: '2024-01-15', state: 'active' })
       const draftId = await createTestTournament({
         date: '2024-01-16',
         state: 'draft',
@@ -367,7 +367,7 @@ describe('Tournaments Integration Tests', () => {
       })
 
       assertSuccess(response)
-      const results = response.body as Record<string, any>
+      const results = response.body as Record<string, { player: ApiPlayerInfo | null }>
       expect(results[playerId]).toBeDefined()
       expect(results[playerId]).toHaveProperty('player')
       expect(results[playerId].player).toBeDefined()

@@ -24,7 +24,7 @@ describe('Players Integration Tests', () => {
       await resetDbPool()
 
       // Force pool creation to verify it uses TEST_DATABASE_URL
-      const testPool = getDbPool()
+      getDbPool()
 
       // Verify the pool is using the correct connection string
       const actualConnectionString = getPoolConnectionString()
