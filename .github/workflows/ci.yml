@@ -14,7 +14,11 @@ jobs:
 
       - uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4
         with:
-          node-version: '18'
+          # jsdom 27 (via html-encoding-sniffer -> @exodus/bytes) requires
+          # Node's synchronous require(esm) support, only available on
+          # ^20.19.0 || ^22.12.0 || >=24.0.0. Node 18 fails test:unit with
+          # "require() of ES Module ... not supported".
+          node-version: '22'
           cache: npm
 
       - run: npm ci
