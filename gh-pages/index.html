@@ -89,8 +89,15 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://brand.cocode.dk/v1.css">
+  <script type="module" src="https://brand.cocode.dk/v1.js"></script>
 </head>
 <body>
+  <!-- The cocode.dk family frame. Without JavaScript its child shows instead: a way home.
+       The site has no top bar of its own to replace. -->
+  <cocode-head project="D7" accent="#ffd700" on-accent="#0a4a24">
+    <a href="https://cocode.dk">cocode.dk</a>
+  </cocode-head>
   <main>
   <!-- Hero Section -->
   <section class="hero" id="hero" data-content="hero" aria-label="Hero section introducing D7 tournament tracker">
@@ -280,19 +287,18 @@
         <p class="footer-text">
           Built with <span class="coffee" aria-label="Coffee">☕</span> and competitive spirit in Denmark
         </p>
-        <p class="footer-author">
-          <strong>Babak Bandpey</strong> — <a href="https://cocode.dk" target="_blank" rel="noopener noreferrer">cocode.dk</a>
-        </p>
         <p class="footer-license">
           MIT — Use it, modify it, make your own tournament tracker for whatever weird card game your friends invented.
-        </p>
-        <p class="footer-links">
-          <a href="https://github.com/cocodedk/D7" target="_blank" rel="noopener noreferrer" aria-label="View D7 project repository on GitHub">View on GitHub</a>
         </p>
       </div>
     </div>
   </footer>
   </main>
+
+  <cocode-foot repo="cocodedk/D7">
+    <a href="https://cocode.dk">cocode.dk</a>
+    <a href="https://github.com/cocodedk/D7">GitHub</a>
+  </cocode-foot>
 
   <script src="script.js"></script>
 </body>
