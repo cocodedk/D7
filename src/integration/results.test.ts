@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { invokeFunction } from './function-invoker'
-import { createAuthHeaders, extractToken, assertSuccess, assertError, getTestAdminPassword } from './test-helpers'
+import { createAuthHeaders, extractToken, assertSuccess, assertError, getTestAdminPassword, type ApiPlayerInfo } from './test-helpers'
 import { resetTestDatabase } from './db-test-setup'
 import {
   createTestPlayer,
@@ -29,7 +29,7 @@ describe('Results Integration Tests', () => {
       await resetDbPool()
 
       // Force pool creation to verify it uses TEST_DATABASE_URL
-      const testPool = getDbPool()
+      getDbPool()
 
       // Verify the pool is using the correct connection string
       const actualConnectionString = getPoolConnectionString()
@@ -132,7 +132,7 @@ describe('Results Integration Tests', () => {
       })
 
       assertSuccess(response)
-      const body = response.body as { year: number; scores: Array<{ playerId: string; player: any }> }
+      const body = response.body as { year: number; scores: Array<{ playerId: string; player: ApiPlayerInfo | null }> }
       expect(body.scores.length).toBeGreaterThan(0)
       const playerScore = body.scores.find((s) => s.playerId === playerId)
       expect(playerScore).toBeDefined()

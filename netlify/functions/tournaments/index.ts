@@ -52,9 +52,10 @@ const handler: Handler = requireAuth(async (event) => {
         }
 
         return jsonResponse(result, 201)
-      } catch (dbError: any) {
+      } catch (dbError) {
         // Handle unique constraint violation as a fallback
-        if (dbError?.code === '23505' || dbError?.constraint === 'tournaments_date_unique') {
+        const pgError = dbError as { code?: string; constraint?: string }
+        if (pgError?.code === '23505' || pgError?.constraint === 'tournaments_date_unique') {
           return errorResponse('A tournament already exists for this date', 409)
         }
         throw dbError

@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "test": "vitest",
-    "test:unit": "vitest --run --exclude 'src/integration/**'",
+    "test:unit": "vitest --run --exclude 'src/integration/**' --config vitest.unit.config.ts",
     "test:integration": "vitest --run src/integration",
     "test:all": "vitest --run",
     "test:integration:watch": "vitest src/integration",

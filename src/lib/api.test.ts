@@ -165,7 +165,7 @@ describe('API Client', () => {
   describe('error handling', () => {
     it('should handle 401 error and redirect to login', async () => {
       const originalLocation = window.location
-      delete (window as any).location
+      delete (window as { location?: Location }).location
       window.location = { ...originalLocation, href: '' } as Location
 
       localStorage.setItem('auth_token', 'test-token')
@@ -247,7 +247,7 @@ describe('fileToBase64', () => {
           }
         }, 0)
       }
-    } as any
+    } as unknown as typeof FileReader
 
     await expect(fileToBase64(file)).rejects.toBeDefined()
 
@@ -271,7 +271,7 @@ describe('compressImage', () => {
           if (this.onload) this.onload()
         }, 0)
       }
-    } as any
+    } as unknown as typeof Image
 
     const result = await compressImage(largeImage)
 
@@ -296,7 +296,7 @@ describe('compressImage', () => {
           if (this.onload) this.onload()
         }, 0)
       }
-    } as any
+    } as unknown as typeof Image
 
     const result = await compressImage(smallImage)
 
@@ -323,7 +323,7 @@ describe('compressImage', () => {
           if (this.onload) this.onload()
         }, 0)
       }
-    } as any
+    } as unknown as typeof Image
 
     const originalGetContext = HTMLCanvasElement.prototype.getContext
     HTMLCanvasElement.prototype.getContext = vi.fn().mockReturnValue({

@@ -21,7 +21,7 @@ interface ResultsTableProps {
   tournamentId: string
 }
 
-export default function ResultsTable({ results, tournamentId: _tournamentId }: ResultsTableProps) {
+export default function ResultsTable({ results }: ResultsTableProps) {
   const { players } = usePlayers()
 
   const sortedResults = Object.entries(results)

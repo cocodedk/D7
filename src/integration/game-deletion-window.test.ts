@@ -23,7 +23,7 @@ describe('Game Deletion Time Window E2E Tests', () => {
     try {
       const { resetDbPool, getDbPool, getPoolConnectionString } = await import('../../netlify/functions/_shared/db')
       await resetDbPool()
-      const testPool = getDbPool()
+      getDbPool()
       const actualConnectionString = getPoolConnectionString()
       if (actualConnectionString !== process.env.TEST_DATABASE_URL) {
         throw new Error(
@@ -234,7 +234,7 @@ describe('Game Deletion Time Window E2E Tests', () => {
 
     await new Promise(resolve => setTimeout(resolve, 50))
 
-    const deleteResponse1 = await invokeFunction(gameHandler, {
+    await invokeFunction(gameHandler, {
       httpMethod: 'DELETE',
       path: `/api/games/${gameId}`,
       headers: createAuthHeaders(authToken),

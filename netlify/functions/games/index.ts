@@ -1,7 +1,7 @@
 import { Handler } from '@netlify/functions'
 import { requireAuth } from '../_shared/auth'
 import { jsonResponse, errorResponse, parseBody, base64ToBuffer } from '../_shared/utils'
-import { query, queryOne, getDbPool } from '../_shared/db'
+import { queryOne, getDbPool } from '../_shared/db'
 
 interface Game {
   id: string

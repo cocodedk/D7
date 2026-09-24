@@ -1,7 +1,7 @@
 import { Handler } from '@netlify/functions'
 import { jsonResponse, errorResponse } from '../../_shared/utils'
 import { query } from '../../_shared/db'
-import { calculateTournamentScores, type ScoreEvent } from '../../_shared/scoring'
+import { calculateTournamentScores, type ScoreEvent, type PlayerScore } from '../../_shared/scoring'
 
 interface ScoreEventRow {
   player_id: string
@@ -13,6 +13,15 @@ interface PlayerInfo {
   name: string
   nickname: string
   avatar_data: Buffer | null
+}
+
+interface ScoreWithPlayer extends PlayerScore {
+  player: {
+    id: string
+    name: string
+    nickname: string
+    avatar: string | null
+  } | null
 }
 
 const handler: Handler = async (event) => {
@@ -71,7 +80,7 @@ const handler: Handler = async (event) => {
           : null,
       }
       return acc
-    }, {} as Record<string, any>)
+    }, {} as Record<string, ScoreWithPlayer>)
 
     return jsonResponse(scoresWithPlayers)
   } catch (error) {

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { invokeFunction } from './function-invoker'
-import { createAuthHeaders, extractToken, assertSuccess, assertError, getTestAdminPassword } from './test-helpers'
+import { extractToken, assertSuccess, assertError, getTestAdminPassword } from './test-helpers'
 import { resetTestDatabase } from './db-test-setup'
 import { handler as loginHandler } from '../../netlify/functions/auth-login'
 import { handler as logoutHandler } from '../../netlify/functions/auth-logout'
