@@ -18,7 +18,7 @@ jobs:
           # Node's synchronous require(esm) support, only available on
           # ^20.19.0 || ^22.12.0 || >=24.0.0. Node 18 fails test:unit with
           # "require() of ES Module ... not supported".
-          node-version: '22'
+          node-version: '26'
           cache: npm
 
       - run: npm ci
